@@ -8,7 +8,6 @@ import com.novaeslucas.pontoeletronico.api.response.Response;
 import com.novaeslucas.pontoeletronico.api.services.EmpresaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,22 +22,16 @@ public class EmpresaController {
 
     private static final Logger log = LoggerFactory.getLogger(EmpresaController.class);
 
-    @Autowired
     private EmpresaService empresaService;
 
-    public EmpresaController() {
+    public EmpresaController(EmpresaService empresaService) {
+        this.empresaService = empresaService;
     }
 
-    /**
-     * Retorna uma empresa dado um CNPJ.
-     *
-     * @param cnpj
-     * @return ResponseEntity<Response<EmpresaDto>>
-     */
     @GetMapping(value = "/cnpj/{cnpj}")
     public ResponseEntity<Response<EmpresaDto>> buscarPorCnpj(@PathVariable("cnpj") String cnpj) {
         log.info("Buscando empresa por CNPJ: {}", cnpj);
-        Response<EmpresaDto> response = new Response<EmpresaDto>();
+        Response<EmpresaDto> response = new Response<>();
         Optional<Empresa> empresa = empresaService.buscarPorCnpj(cnpj);
 
         if (!empresa.isPresent()) {
@@ -51,12 +44,6 @@ public class EmpresaController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Popula um DTO com os dados de uma empresa.
-     *
-     * @param empresa
-     * @return EmpresaDto
-     */
     private EmpresaDto converterEmpresaDto(Empresa empresa) {
         EmpresaDto empresaDto = new EmpresaDto();
         empresaDto.setId(empresa.getId());

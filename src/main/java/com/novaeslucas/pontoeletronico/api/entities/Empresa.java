@@ -28,14 +28,9 @@ public class Empresa implements Serializable  {
     @OneToMany(mappedBy = "empresa", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Funcionario> funcionarios;
 
-
-    public Empresa() {
-    }
-
     public void setId(Long id) {
         this.id = id;
     }
-
 
     public Long getId() {
         return id;

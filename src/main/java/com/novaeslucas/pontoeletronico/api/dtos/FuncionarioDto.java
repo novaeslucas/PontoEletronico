@@ -16,9 +16,6 @@ public class FuncionarioDto {
     private Optional<String> qtdHorasTrabalhoDia = Optional.empty();
     private Optional<String> qtdHorasAlmoco = Optional.empty();
 
-    public FuncionarioDto() {
-    }
-
     public Long getId() {
         return id;
     }

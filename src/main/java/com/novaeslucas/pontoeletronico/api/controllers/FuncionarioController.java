@@ -1,7 +1,6 @@
 package com.novaeslucas.pontoeletronico.api.controllers;
 
 import java.math.BigDecimal;
-import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
 import javax.validation.Valid;
@@ -13,7 +12,6 @@ import com.novaeslucas.pontoeletronico.api.services.FuncionarioService;
 import com.novaeslucas.pontoeletronico.api.utils.PasswordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -31,26 +29,17 @@ public class FuncionarioController {
 
     private static final Logger log = LoggerFactory.getLogger(FuncionarioController.class);
 
-    @Autowired
     private FuncionarioService funcionarioService;
 
-    public FuncionarioController() {
+    public FuncionarioController(FuncionarioService funcionarioService) {
+        this.funcionarioService = funcionarioService;
     }
 
-    /**
-     * Atualiza os dados de um funcionário.
-     *
-     * @param id
-     * @param funcionarioDto
-     * @param result
-     * @return ResponseEntity<Response<FuncionarioDto>>
-     * @throws NoSuchAlgorithmException
-     */
     @PutMapping(value = "/{id}")
     public ResponseEntity<Response<FuncionarioDto>> atualizar(@PathVariable("id") Long id,
-                                                              @Valid @RequestBody FuncionarioDto funcionarioDto, BindingResult result) throws NoSuchAlgorithmException {
+                                                              @Valid @RequestBody FuncionarioDto funcionarioDto, BindingResult result) {
         log.info("Atualizando funcionário: {}", funcionarioDto.toString());
-        Response<FuncionarioDto> response = new Response<FuncionarioDto>();
+        Response<FuncionarioDto> response = new Response<>();
 
         Optional<Funcionario> funcionario = this.funcionarioService.buscarPorId(id);
         if (!funcionario.isPresent()) {
@@ -71,16 +60,7 @@ public class FuncionarioController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Atualiza os dados do funcionário com base nos dados encontrados no DTO.
-     *
-     * @param funcionario
-     * @param funcionarioDto
-     * @param result
-     * @throws NoSuchAlgorithmException
-     */
-    private void atualizarDadosFuncionario(Funcionario funcionario, FuncionarioDto funcionarioDto, BindingResult result)
-            throws NoSuchAlgorithmException {
+    private void atualizarDadosFuncionario(Funcionario funcionario, FuncionarioDto funcionarioDto, BindingResult result) {
         funcionario.setNome(funcionarioDto.getNome());
 
         if (!funcionario.getEmail().equals(funcionarioDto.getEmail())) {
@@ -105,12 +85,6 @@ public class FuncionarioController {
         }
     }
 
-    /**
-     * Retorna um DTO com os dados de um funcionário.
-     *
-     * @param funcionario
-     * @return FuncionarioDto
-     */
     private FuncionarioDto converterFuncionarioDto(Funcionario funcionario) {
         FuncionarioDto funcionarioDto = new FuncionarioDto();
         funcionarioDto.setId(funcionario.getId());

@@ -13,9 +13,6 @@ public class LancamentoDto {
     private String localizacao;
     private Long funcionarioId;
 
-    public LancamentoDto() {
-    }
-
     public Optional<Long> getId() {
         return id;
     }

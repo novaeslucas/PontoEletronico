@@ -20,9 +20,6 @@ public class CadastroPFDto {
     private Optional<String> qtdHorasAlmoco = Optional.empty();
     private String cnpj;
 
-    public CadastroPFDto() {
-    }
-
     public Long getId() {
         return id;
     }

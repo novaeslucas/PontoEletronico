@@ -29,9 +29,6 @@ public class Funcionario implements Serializable {
     private Empresa empresa;
     private List<Lancamento> lancamentos;
 
-    public Funcionario() {
-    }
-
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
     public Long getId() {

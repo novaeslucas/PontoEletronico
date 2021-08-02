@@ -16,9 +16,6 @@ public class CadastroPJDto {
     private String razaoSocial;
     private String cnpj;
 
-    public CadastroPJDto() {
-    }
-
     public Long getId() {
         return id;
     }

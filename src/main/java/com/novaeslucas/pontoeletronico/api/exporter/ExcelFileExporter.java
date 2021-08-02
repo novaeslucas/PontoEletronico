@@ -4,6 +4,8 @@ import com.novaeslucas.pontoeletronico.api.entities.Lancamento;
 import com.novaeslucas.pontoeletronico.api.enums.TipoCelula;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -16,6 +18,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ExcelFileExporter {
+
+    private static final Logger log = LoggerFactory.getLogger(ExcelFileExporter.class);
 
     public static ByteArrayInputStream listaLancamentosToExcelFile(List<Lancamento> lancamentos) {
         Workbook workbook = new XSSFWorkbook();
@@ -68,7 +72,7 @@ public class ExcelFileExporter {
             workbook.write(outputStream);
             return new ByteArrayInputStream(outputStream.toByteArray());
         } catch (IOException ex) {
-            ex.printStackTrace();
+            log.error("Erro: listaLancamentosToExcelFile", ex);
             return null;
         }
     }

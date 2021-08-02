@@ -46,6 +46,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 @RestController
 @RequestMapping("/api/lancamentos")
@@ -122,7 +123,7 @@ public class LancamentoController {
         try{
             lancamento = this.converterDtoParaLancamento(lancamentoDto, result);
         } catch (ParseException e){
-            e.printStackTrace();
+            log.error("Erro: converterDtoParaLancamento", e);
         }
         if (result.hasErrors()) {
             log.error("Erro validando lançamento: {}", result.getAllErrors());
@@ -203,19 +204,21 @@ public class LancamentoController {
         return lancamento;
     }
 
-    @PostMapping(value = "/qrcode")
-    public ResponseEntity<String> adicionarViaQrCode() {
+    @GetMapping(value = "/qrcode/{id}")
+    public ModelAndView lancarPonto(@PathVariable("id") Long id) {
         LancamentoDto lancamentoDto = new LancamentoDto();
 
-        lancamentoDto.setData(this.dateFormat.format(new Date()));
+        Date dataLancamento = new Date();
+        String dataFormatadaDto = this.dateFormat.format(dataLancamento);
+
+        lancamentoDto.setData(dataFormatadaDto);
         lancamentoDto.setDescricao(null);
         lancamentoDto.setLocalizacao(null);
         String tipoLancamento = obterTipoLancamento(lancamentoDto.getData()).toString();
         lancamentoDto.setTipo(tipoLancamento);
-        lancamentoDto.setFuncionarioId(1L);
+        lancamentoDto.setFuncionarioId(id);
         lancamentoDto.setId(null);
 
-        StringBuilder response = new StringBuilder();
         try {
             ObjectMapper mapper = new ObjectMapper();
             String jsonInputString = mapper.writeValueAsString(lancamentoDto);
@@ -232,20 +235,15 @@ public class LancamentoController {
             os.write(jsonInputString.getBytes(StandardCharsets.UTF_8));
             os.close();
 
-            try(BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))){
-                response = new StringBuilder();
-                String responseLine;
-                while ((responseLine = br.readLine()) != null) {
-                    response.append(responseLine.trim());
-                }
-            }
-
             conn.disconnect();
         } catch (IOException e){
-            e.printStackTrace();
+            log.error("Erro: adicionarViaQrCode", e);
         }
 
-        return ResponseEntity.ok(response.toString());
+        ModelAndView mv = new ModelAndView("index");
+        mv.addObject("dataPonto", formatarDataPagina(dataLancamento));
+
+        return mv;
     }
 
     private TipoEnum obterTipoLancamento(String dataDto) {
@@ -290,7 +288,7 @@ public class LancamentoController {
             cal.set(Calendar.MINUTE, minuto);
             data = cal.getTime();
         } catch (ParseException e) {
-            e.printStackTrace();
+            log.error("Erro: alterarTempoData: erro no Parse", e);
         }
         return data;
     }
@@ -312,16 +310,21 @@ public class LancamentoController {
             }
             data = cal.getTime();
         } catch (ParseException e) {
-            e.printStackTrace();
+            log.error("Erro: alterarDiaHoraData: erro no Parse", e);
         }
         return data;
     }
 
-    @GetMapping("/{data}/download")
-    public ResponseEntity<Object> downloadRelatorioMensal(@PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date data, HttpServletResponse response) throws IOException {
+    private String formatarDataPagina(Date dataLancamento){
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        return formatter.format(dataLancamento);
+    }
+
+    @GetMapping("/download/{id}/{data}")
+    public ResponseEntity<Object> downloadRelatorioMensal(@PathVariable("id") Long id, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date data, HttpServletResponse response) throws IOException {
         Date dataInicialMes = this.alterarDiaHoraData(this.dateFormat.format(data), true);
         Date dataFinalMes = this.alterarDiaHoraData(this.dateFormat.format(data), false);
-        List<Lancamento> lancamentosMes = this.lancamentoService.buscarPorDataFuncionarioId(dataInicialMes, dataFinalMes, 1L);
+        List<Lancamento> lancamentosMes = this.lancamentoService.buscarPorDataFuncionarioId(dataInicialMes, dataFinalMes, id);
         if(lancamentosMes.size() > 0){
             response.setContentType("application/octet-stream");
             response.setHeader("Content-Disposition", "attachment; filename=lancamentos.xlsx");
