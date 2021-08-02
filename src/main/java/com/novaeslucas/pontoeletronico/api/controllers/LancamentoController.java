@@ -122,7 +122,7 @@ public class LancamentoController {
         try{
             lancamento = this.converterDtoParaLancamento(lancamentoDto, result);
         } catch (ParseException e){
-            e.printStackTrace();
+            log.error("Erro: converterDtoParaLancamento", e);
         }
         if (result.hasErrors()) {
             log.error("Erro validando lançamento: {}", result.getAllErrors());
@@ -242,7 +242,7 @@ public class LancamentoController {
 
             conn.disconnect();
         } catch (IOException e){
-            e.printStackTrace();
+            log.error("Erro: adicionarViaQrCode", e);
         }
 
         return ResponseEntity.ok(response.toString());
@@ -290,7 +290,7 @@ public class LancamentoController {
             cal.set(Calendar.MINUTE, minuto);
             data = cal.getTime();
         } catch (ParseException e) {
-            e.printStackTrace();
+            log.error("Erro: alterarTempoData: erro no Parse", e);
         }
         return data;
     }
@@ -312,7 +312,7 @@ public class LancamentoController {
             }
             data = cal.getTime();
         } catch (ParseException e) {
-            e.printStackTrace();
+            log.error("Erro: alterarDiaHoraData: erro no Parse", e);
         }
         return data;
     }
