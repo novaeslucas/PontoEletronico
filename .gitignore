@@ -49,3 +49,7 @@ nbdist/
 
 ### Database files ###
 *.db
+
+### SonarQube files ###
+/.scannerwork
+sonar-project.properties
