@@ -203,8 +203,8 @@ public class LancamentoController {
         return lancamento;
     }
 
-    @PostMapping(value = "/qrcode")
-    public ResponseEntity<String> adicionarViaQrCode() {
+    @PostMapping(value = "/qrcode/{id}")
+    public ResponseEntity<String> adicionarViaQrCode(@PathVariable("id") Long id) {
         LancamentoDto lancamentoDto = new LancamentoDto();
 
         lancamentoDto.setData(this.dateFormat.format(new Date()));
@@ -212,7 +212,7 @@ public class LancamentoController {
         lancamentoDto.setLocalizacao(null);
         String tipoLancamento = obterTipoLancamento(lancamentoDto.getData()).toString();
         lancamentoDto.setTipo(tipoLancamento);
-        lancamentoDto.setFuncionarioId(1L);
+        lancamentoDto.setFuncionarioId(id);
         lancamentoDto.setId(null);
 
         StringBuilder response = new StringBuilder();
@@ -317,11 +317,11 @@ public class LancamentoController {
         return data;
     }
 
-    @GetMapping("/{data}/download")
-    public ResponseEntity<Object> downloadRelatorioMensal(@PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date data, HttpServletResponse response) throws IOException {
+    @GetMapping("/download/{id}/{data}")
+    public ResponseEntity<Object> downloadRelatorioMensal(@PathVariable("id") Long id, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date data, HttpServletResponse response) throws IOException {
         Date dataInicialMes = this.alterarDiaHoraData(this.dateFormat.format(data), true);
         Date dataFinalMes = this.alterarDiaHoraData(this.dateFormat.format(data), false);
-        List<Lancamento> lancamentosMes = this.lancamentoService.buscarPorDataFuncionarioId(dataInicialMes, dataFinalMes, 1L);
+        List<Lancamento> lancamentosMes = this.lancamentoService.buscarPorDataFuncionarioId(dataInicialMes, dataFinalMes, id);
         if(lancamentosMes.size() > 0){
             response.setContentType("application/octet-stream");
             response.setHeader("Content-Disposition", "attachment; filename=lancamentos.xlsx");
