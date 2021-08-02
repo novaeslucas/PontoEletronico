@@ -34,6 +34,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -46,6 +47,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 @RestController
 @RequestMapping("/api/lancamentos")
@@ -203,11 +205,14 @@ public class LancamentoController {
         return lancamento;
     }
 
-    @PostMapping(value = "/qrcode/{id}")
-    public ResponseEntity<String> adicionarViaQrCode(@PathVariable("id") Long id) {
+    @GetMapping(value = "/qrcode/{id}")
+    public ModelAndView lancarPonto(@PathVariable("id") Long id) {
         LancamentoDto lancamentoDto = new LancamentoDto();
 
-        lancamentoDto.setData(this.dateFormat.format(new Date()));
+        Date dataLancamento = new Date();
+        String dataFormatadaDto = this.dateFormat.format(dataLancamento);
+
+        lancamentoDto.setData(dataFormatadaDto);
         lancamentoDto.setDescricao(null);
         lancamentoDto.setLocalizacao(null);
         String tipoLancamento = obterTipoLancamento(lancamentoDto.getData()).toString();
@@ -215,7 +220,6 @@ public class LancamentoController {
         lancamentoDto.setFuncionarioId(id);
         lancamentoDto.setId(null);
 
-        StringBuilder response = new StringBuilder();
         try {
             ObjectMapper mapper = new ObjectMapper();
             String jsonInputString = mapper.writeValueAsString(lancamentoDto);
@@ -232,20 +236,15 @@ public class LancamentoController {
             os.write(jsonInputString.getBytes(StandardCharsets.UTF_8));
             os.close();
 
-            try(BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))){
-                response = new StringBuilder();
-                String responseLine;
-                while ((responseLine = br.readLine()) != null) {
-                    response.append(responseLine.trim());
-                }
-            }
-
             conn.disconnect();
         } catch (IOException e){
             log.error("Erro: adicionarViaQrCode", e);
         }
 
-        return ResponseEntity.ok(response.toString());
+        ModelAndView mv = new ModelAndView("index");
+        mv.addObject("dataPonto", formatarDataPagina(dataLancamento));
+
+        return mv;
     }
 
     private TipoEnum obterTipoLancamento(String dataDto) {
@@ -315,6 +314,11 @@ public class LancamentoController {
             log.error("Erro: alterarDiaHoraData: erro no Parse", e);
         }
         return data;
+    }
+
+    private String formatarDataPagina(Date dataLancamento){
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        return formatter.format(dataLancamento);
     }
 
     @GetMapping("/download/{id}/{data}")
