@@ -1,6 +1,0 @@
-projectKey=PontoEletronico
-serverUrl=http://localhost:9000
-serverVersion=9.0.1.46107
-dashboardUrl=http://localhost:9000/dashboard?id=PontoEletronico
-ceTaskId=AXsH_VtMyRepie6Jxdgh
-ceTaskUrl=http://localhost:9000/api/ce/task?id=AXsH_VtMyRepie6Jxdgh
