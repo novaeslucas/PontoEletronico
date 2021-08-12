@@ -1,4 +1,4 @@
-[![Java CI with Maven](https://github.com/novaeslucas/PontoEletronico/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/novaeslucas/PontoEletronico/actions/workflows/maven.yml
+[![Java CI with Maven](https://github.com/novaeslucas/PontoEletronico/actions/workflows/maven.yml/badge.svg?branch=main)](https://github.com/novaeslucas/PontoEletronico/actions/workflows/maven.yml)
 
 # PontoEletronico
 Projeto de Ponto Eletrônico utlizando SpringBoot.
