@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.novaeslucas</groupId>
-    <artifactId>PontoEletronico</artifactId>
+    <artifactId>pontoeletronico</artifactId>
     <version>0.0.1</version>
     <packaging>jar</packaging>
 
@@ -38,45 +38,51 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- JPA e H2 -->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-data-jpa</artifactId>
-            </dependency>
+        <!-- JPA , H2 e MySql -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
 
-            <dependency>
-                <groupId>com.h2database</groupId>
-                <artifactId>h2</artifactId>
-                <scope>runtime</scope>
-            </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <!-- -->
 
         <!-- Spring Web -->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-web</artifactId>
-            </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
         <!-- -->
 
         <!-- Hibernate validator -->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-validation</artifactId>
-            </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
         <!-- -->
 
         <!-- resolvendo problema do jackson para o jdk8-->
-            <dependency>
-                <groupId>com.fasterxml.jackson.datatype</groupId>
-                <artifactId>jackson-datatype-jdk8</artifactId>
-            </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jdk8</artifactId>
+        </dependency>
         <!-- -->
 
         <!-- Manipulação com ENUN's-->
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-            </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
         <!-- -->
 
         <dependency>
@@ -92,10 +98,10 @@
         </dependency>
 
         <!-- Ehcache-->
-            <dependency>
-                <groupId>net.sf.ehcache</groupId>
-                <artifactId>ehcache</artifactId>
-            </dependency>
+        <dependency>
+            <groupId>net.sf.ehcache</groupId>
+            <artifactId>ehcache</artifactId>
+        </dependency>
         <!-- -->
 
         <dependency>
@@ -114,5 +120,23 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>github</id>
+            <activation>
+                <property>
+                    <name>useGitHubPackages</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <distributionManagement>
+                <repository>
+                    <id>github</id>
+                    <name>GitHub Packages</name>
+                    <url>https://maven.pkg.github.com/novaeslucas/PontoEletronico</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+    </profiles>
 
 </project>
