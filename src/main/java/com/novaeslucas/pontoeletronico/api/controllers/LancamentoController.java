@@ -219,6 +219,7 @@ public class LancamentoController {
         lancamentoDto.setFuncionarioId(id);
         lancamentoDto.setId(null);
 
+        StringBuilder response;
         try {
             ObjectMapper mapper = new ObjectMapper();
             String jsonInputString = mapper.writeValueAsString(lancamentoDto);
@@ -234,6 +235,14 @@ public class LancamentoController {
             OutputStream os = conn.getOutputStream();
             os.write(jsonInputString.getBytes(StandardCharsets.UTF_8));
             os.close();
+
+            try(BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))){
+                response = new StringBuilder();
+                String responseLine;
+                while ((responseLine = br.readLine()) != null) {
+                    response.append(responseLine.trim());
+                }
+            }
 
             conn.disconnect();
         } catch (IOException e){
