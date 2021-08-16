@@ -4,10 +4,21 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Ponto Eletrônico</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/bootstrap.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/all.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}"/>
 </head>
 <body>
 
-    <div layout:fragment="content"></div>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Ponto Eletrônico</a>
+    </div>
+</nav>
 
+<div layout:fragment="content" class="px-4 py-3 my-5 text-center"></div>
+
+<script th:href="@{/js/bootstrap.js}"/>
+<script th:href="@{/js/main.js}"/>
 </body>
 </html>
