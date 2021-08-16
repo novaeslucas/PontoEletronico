@@ -1,21 +1,21 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" layout:decorate="~{fragments/main_layout}">
 <head>
     <title>Ponto Eletrônico</title>
 </head>
 <body>
 <div>
-    <main role="main">
+    <div layout:fragment="content">
         <div class="titulo-pagina">
-            <div class="container text-center" style="font-size: 18px">
-                <strong>Error</strong>
+            <div class="container text-center" style="font-size: 60px; color: red;">
+                <strong><i class="fas fa-times-circle"></i></strong>
             </div>
         </div>
         <br/>
         <div class="container">
             <p>Ocorreu um erro.</p>
         </div>
-    </main>
+    </div>
 </div>
 </body>
 </html>
