@@ -54,4 +54,4 @@ nbdist/
 /.scannerwork
 sonar-project.properties
 
-application.properties
+src/main/resources/application.properties
