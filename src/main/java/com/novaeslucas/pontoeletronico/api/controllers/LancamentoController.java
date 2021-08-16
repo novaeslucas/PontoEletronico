@@ -6,10 +6,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -18,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.novaeslucas.pontoeletronico.api.dtos.LancamentoDto;
 import com.novaeslucas.pontoeletronico.api.entities.Funcionario;
 import com.novaeslucas.pontoeletronico.api.entities.Lancamento;
+import com.novaeslucas.pontoeletronico.api.entities.ResponseData;
 import com.novaeslucas.pontoeletronico.api.enums.TipoEnum;
 import com.novaeslucas.pontoeletronico.api.exporter.ExcelFileExporter;
 import com.novaeslucas.pontoeletronico.api.response.Response;
@@ -220,8 +218,10 @@ public class LancamentoController {
         lancamentoDto.setId(null);
 
         StringBuilder response;
+        ObjectMapper mapper = new ObjectMapper();
+        LinkedHashMap responseData = null;
         try {
-            ObjectMapper mapper = new ObjectMapper();
+
             String jsonInputString = mapper.writeValueAsString(lancamentoDto);
 
             URL url = new URL("http://localhost:8080/api/lancamentos");
@@ -245,12 +245,23 @@ public class LancamentoController {
             }
 
             conn.disconnect();
+
+            responseData = mapper.readValue(response.toString(), LinkedHashMap.class);
         } catch (IOException e){
             log.error("Erro: adicionarViaQrCode", e);
         }
 
-        ModelAndView mv = new ModelAndView("index");
-        mv.addObject("dataPonto", formatarDataPagina(dataLancamento));
+        ModelAndView mv = null;
+
+        if(responseData != null){
+            if(responseData.get("data") != null){
+                mv = new ModelAndView("index");
+                mv.addObject("dataPonto", formatarDataPagina(dataLancamento));
+            }else{
+                mv = new ModelAndView("error");
+            }
+
+        }
 
         return mv;
     }
@@ -281,7 +292,7 @@ public class LancamentoController {
                 tipoLancamento = TipoEnum.TERMINO_TURNO_EXTRA;
                 break;
             default:
-                throw new IllegalStateException("Unexpected value: " + lancamentos.size());
+                throw new IllegalStateException("Quantidade de lancamentos excedidos: " + lancamentos.size());
         }
 
         return tipoLancamento;
