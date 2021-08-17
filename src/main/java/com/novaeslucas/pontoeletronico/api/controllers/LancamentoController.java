@@ -259,7 +259,7 @@ public class LancamentoController {
 
         if(responseData != null){
             if(responseData.get("data") != null){
-                mv = new ModelAndView("index");
+                mv = new ModelAndView("lancamento_executado");
                 mv.addObject("dataPonto", formatarDataPagina(dataLancamento));
             }else{
                 mv = new ModelAndView("error");
