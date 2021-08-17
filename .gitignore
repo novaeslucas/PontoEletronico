@@ -53,5 +53,3 @@ nbdist/
 ### SonarQube files ###
 /.scannerwork
 sonar-project.properties
-
-src/main/resources/application.properties
