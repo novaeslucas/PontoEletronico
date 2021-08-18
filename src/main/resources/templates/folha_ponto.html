@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" layout:decorate="~{fragments/main_layout}">
+<head>
+    <title>Ponto Eletrônico</title>
+</head>
+<body>
+<div>
+    <div layout:fragment="content">
+        <div class="titulo-pagina">
+            <div class="container text-center h2">
+                <strong>Folha de ponto</strong>
+            </div>
+        </div>
+        <br/>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">Data</th>
+                    <th scope="col" colspan="2">Turno 1</th>
+                    <th scope="col" colspan="2">Turno 2</th>
+                    <th scope="col" colspan="2">Horas do dia</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="elemento : ${map}">
+                    <td>
+                        <span th:text="${elemento.key}"/>
+                    </td>
+                    <td th:each="lancamento : ${elemento.value}">
+                        <span th:text="${#dates.format(lancamento.data, 'HH:mm')}"/>
+                    </td>
+                    <td>
+                        <span th:text="${@dateUtils.calcularHorasDia(elemento.value)}"/>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
