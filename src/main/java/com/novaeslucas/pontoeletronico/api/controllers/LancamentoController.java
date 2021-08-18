@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -21,6 +22,7 @@ import com.novaeslucas.pontoeletronico.api.exporter.ExcelFileExporter;
 import com.novaeslucas.pontoeletronico.api.response.Response;
 import com.novaeslucas.pontoeletronico.api.services.FuncionarioService;
 import com.novaeslucas.pontoeletronico.api.services.LancamentoService;
+import com.novaeslucas.pontoeletronico.api.utils.DateUtils;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -359,4 +361,26 @@ public class LancamentoController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @GetMapping("/folha-ponto/{id}")
+    public ModelAndView folhaPonto(@PathVariable("id") Long id){
+        Date hoje = new Date();
+        Date dataInicialMes = this.alterarDiaHoraData(this.dateFormat.format(hoje), true);
+        Date dataFinalMes = this.alterarDiaHoraData(this.dateFormat.format(hoje), false);
+        List<Lancamento> lancamentosMes = this.lancamentoService.buscarPorDataFuncionarioId(dataInicialMes, dataFinalMes, id);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+        Map<String, List<Lancamento>> map = lancamentosMes.stream().collect(Collectors.groupingBy(l -> sdf.format(l.getData())));
+        map = new TreeMap<>(map);
+
+        ModelAndView mv = null;
+        if(lancamentosMes.size() > 0){
+            mv = new ModelAndView("folha_ponto");
+            mv.addObject("map", map);
+        }else{
+            mv = new ModelAndView("error");
+        }
+
+        return mv;
+    }
 }

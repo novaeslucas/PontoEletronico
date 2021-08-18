@@ -4,21 +4,31 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Ponto Eletrônico</title>
-    <link rel="stylesheet" type="text/css" th:href="@{/css/bootstrap.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/bootstrap.min.css}"/>
     <link rel="stylesheet" type="text/css" th:href="@{/css/all.css}"/>
-    <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}"/>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand navbar-dark bg-dark" aria-label="Second navbar example">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">Ponto Eletrônico</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-principal" aria-controls="navbar-principal" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbar-principal">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="http://192.168.1.241:8080/api/lancamentos/folha-ponto/3">Folha de ponto</a>
+                </li>
+            </ul>
+        </div>
     </div>
 </nav>
 
 <div layout:fragment="content" class="px-4 py-3 my-5 text-center"></div>
 
-<script th:href="@{/js/bootstrap.js}"/>
-<script th:href="@{/js/main.js}"/>
+<script th:href="@{/js/bootstrap.min.js}"></script>
+
 </body>
 </html>
