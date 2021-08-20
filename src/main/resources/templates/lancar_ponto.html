@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" layout:decorate="~{fragments/main_layout}">
+<head>
+    <title>Ponto Eletrônico</title>
+</head>
+<body>
+<div>
+    <div layout:fragment="content">
+        <div class="container">
+            <form action="#" th:action="@{/api/lancamentos/lancar-ponto/{id}(id=${id})}" th:method="post">
+                <span>Para registrar o ponto, por favor confirme clicando no botão abaixo.</span>
+                <br/>
+                <br/>
+                <button type="submit" class="btn btn-success">Confirmar</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
