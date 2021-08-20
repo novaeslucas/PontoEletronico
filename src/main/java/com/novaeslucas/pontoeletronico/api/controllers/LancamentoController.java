@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.novaeslucas.pontoeletronico.api.dtos.LancamentoDto;
 import com.novaeslucas.pontoeletronico.api.entities.Funcionario;
 import com.novaeslucas.pontoeletronico.api.entities.Lancamento;
-import com.novaeslucas.pontoeletronico.api.entities.ResponseData;
+import com.novaeslucas.pontoeletronico.api.entities.LancamentoFolhaPonto;
 import com.novaeslucas.pontoeletronico.api.enums.TipoEnum;
 import com.novaeslucas.pontoeletronico.api.exporter.ExcelFileExporter;
 import com.novaeslucas.pontoeletronico.api.response.Response;
@@ -24,8 +24,6 @@ import com.novaeslucas.pontoeletronico.api.services.FuncionarioService;
 import com.novaeslucas.pontoeletronico.api.services.LancamentoService;
 import com.novaeslucas.pontoeletronico.api.utils.DateUtils;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.poi.util.IOUtils;
 import org.slf4j.Logger;
@@ -57,7 +55,6 @@ import org.springframework.web.servlet.ModelAndView;
 public class LancamentoController {
 
     private static final Logger log = LoggerFactory.getLogger(LancamentoController.class);
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     private LancamentoService lancamentoService;
 
@@ -170,7 +167,7 @@ public class LancamentoController {
     private LancamentoDto converterLancamentoDto(Lancamento lancamento) {
         LancamentoDto lancamentoDto = new LancamentoDto();
         lancamentoDto.setId(Optional.of(lancamento.getId()));
-        lancamentoDto.setData(this.dateFormat.format(lancamento.getData()));
+        lancamentoDto.setData(retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(lancamento.getData()));
         lancamentoDto.setTipo(lancamento.getTipo().toString());
         lancamentoDto.setDescricao(lancamento.getDescricao());
         lancamentoDto.setLocalizacao(lancamento.getLocalizacao());
@@ -196,7 +193,7 @@ public class LancamentoController {
 
         lancamento.setDescricao(lancamentoDto.getDescricao());
         lancamento.setLocalizacao(lancamentoDto.getLocalizacao());
-        lancamento.setData(this.dateFormat.parse(lancamentoDto.getData()));
+        lancamento.setData(retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(lancamentoDto.getData()));
 
         if (EnumUtils.isValidEnum(TipoEnum.class, lancamentoDto.getTipo())) {
             lancamento.setTipo(TipoEnum.valueOf(lancamentoDto.getTipo()));
@@ -209,11 +206,18 @@ public class LancamentoController {
 
     @ApiOperation(value = "Lança um ponto no sistema de ponto eletrônico", httpMethod = "GET")
     @GetMapping(value = "/qrcode/{id}")
+    public ModelAndView preLancarPonto(@PathVariable("id") Long id) {
+        ModelAndView mv = new ModelAndView("lancar_ponto");
+        mv.addObject("id", id);
+        return mv;
+    }
+
+    @PostMapping(value = "/lancar-ponto/{id}")
     public ModelAndView lancarPonto(@PathVariable("id") Long id) {
         LancamentoDto lancamentoDto = new LancamentoDto();
 
         Date dataLancamento = new Date();
-        String dataFormatadaDto = this.dateFormat.format(dataLancamento);
+        String dataFormatadaDto = retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(dataLancamento);
 
         lancamentoDto.setData(dataFormatadaDto);
         lancamentoDto.setDescricao(null);
@@ -271,7 +275,7 @@ public class LancamentoController {
 
         return mv;
     }
-
+    
     private TipoEnum obterTipoLancamento(String dataDto) {
         Date dataInicial = alterarTempoData(dataDto, 0, 0);
         Date dataFinal = alterarTempoData(dataDto, 23, 59);
@@ -307,7 +311,7 @@ public class LancamentoController {
     private Date alterarTempoData(String dataDto, int hora, int minuto){
         Date data = new Date();
         try{
-            data = this.dateFormat.parse(dataDto);
+            data = retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dataDto);
             Calendar cal = Calendar.getInstance();
             cal.setTime(data);
             cal.set(Calendar.HOUR_OF_DAY, hora);
@@ -322,7 +326,7 @@ public class LancamentoController {
     private Date alterarDiaHoraData(String dataDto, boolean primeiroDia){
         Date data = new Date();
         try{
-            data = this.dateFormat.parse(dataDto);
+            data = retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dataDto);
             Calendar cal = Calendar.getInstance();
             cal.setTime(data);
             if(primeiroDia){
@@ -348,8 +352,8 @@ public class LancamentoController {
 
     @GetMapping("/download/{id}/{data}")
     public ResponseEntity<Object> downloadRelatorioMensal(@PathVariable("id") Long id, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date data, HttpServletResponse response) throws IOException {
-        Date dataInicialMes = this.alterarDiaHoraData(this.dateFormat.format(data), true);
-        Date dataFinalMes = this.alterarDiaHoraData(this.dateFormat.format(data), false);
+        Date dataInicialMes = this.alterarDiaHoraData(retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(data), true);
+        Date dataFinalMes = this.alterarDiaHoraData(retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(data), false);
         List<Lancamento> lancamentosMes = this.lancamentoService.buscarPorDataFuncionarioId(dataInicialMes, dataFinalMes, id);
         if(lancamentosMes.size() > 0){
             response.setContentType("application/octet-stream");
@@ -361,22 +365,68 @@ public class LancamentoController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    public SimpleDateFormat retornarArgumentoSimpleDateFormat(String padrao){
+        return new SimpleDateFormat(padrao);
+    }
+
     @GetMapping("/folha-ponto/{id}")
     public ModelAndView folhaPonto(@PathVariable("id") Long id){
         Date hoje = new Date();
-        Date dataInicialMes = this.alterarDiaHoraData(this.dateFormat.format(hoje), true);
-        Date dataFinalMes = this.alterarDiaHoraData(this.dateFormat.format(hoje), false);
+        Date dataInicialMes = this.alterarDiaHoraData(retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(hoje), true);
+        Date dataFinalMes = this.alterarDiaHoraData(retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(hoje), false);
         List<Lancamento> lancamentosMes = this.lancamentoService.buscarPorDataFuncionarioId(dataInicialMes, dataFinalMes, id);
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(dataFinalMes);
+        int ultimoDiaMes = cal.getActualMaximum(Calendar.DATE);
 
-        Map<String, List<Lancamento>> map = lancamentosMes.stream().collect(Collectors.groupingBy(l -> sdf.format(l.getData())));
-        map = new TreeMap<>(map);
-
-        ModelAndView mv = null;
+        ModelAndView mv;
         if(lancamentosMes.size() > 0){
+            Map<String, List<Lancamento>> map = lancamentosMes.stream().collect(Collectors.groupingBy(l -> retornarArgumentoSimpleDateFormat("dd/MM/yyyy").format(l.getData())));
+            String mesAno = retornarArgumentoSimpleDateFormat("/MM/yyyy").format(new Date());
+            for(int i = 0; i < ultimoDiaMes; i++){
+                String diaDoMes = i >= 0 && i < 9 ? "0" + (i + 1) + mesAno : (i + 1) + mesAno;
+                if(!map.containsKey(diaDoMes)){
+                    map.put(diaDoMes, null);
+                }
+            }
+
+            Map<String, LancamentoFolhaPonto> mapAlterado = new TreeMap<>();
+            for (Map.Entry<String, List<Lancamento>> entry : map.entrySet()){
+                LancamentoFolhaPonto lfp = new LancamentoFolhaPonto();
+                lfp.setData(entry.getKey());
+                if(entry.getValue() == null){
+                    mapAlterado.put(entry.getKey(), lfp);
+                }else{
+                    for(Lancamento l : entry.getValue()){
+                        switch (l.getTipo()){
+                            case INICIO_TRABALHO:
+                                lfp.setTurno1Horario1(retornarArgumentoSimpleDateFormat("HH:mm").format(l.getData()));
+                                break;
+                            case INICIO_ALMOCO:
+                                lfp.setTurno1Horario2(retornarArgumentoSimpleDateFormat("HH:mm").format(l.getData()));
+                                break;
+                            case TERMINO_ALMOCO:
+                                lfp.setTurno2Horario1(retornarArgumentoSimpleDateFormat("HH:mm").format(l.getData()));
+                                break;
+                            case TERMINO_TRABALHO:
+                                lfp.setTurno2Horario2(retornarArgumentoSimpleDateFormat("HH:mm").format(l.getData()));
+                                break;
+                            case INICIO_TURNO_EXTRA:
+                                lfp.setTurnoExtraHorario1(retornarArgumentoSimpleDateFormat("HH:mm").format(l.getData()));
+                                break;
+                            case TERMINO_TURNO_EXTRA:
+                                lfp.setTurnoExtraHorario2(retornarArgumentoSimpleDateFormat("HH:mm").format(l.getData()));
+                                break;
+                        }
+                    }
+                    lfp.setHorasDia(DateUtils.calcularHorasDia(entry.getValue()));
+                    mapAlterado.put(entry.getKey(), lfp);
+                }
+            }
+
             mv = new ModelAndView("folha_ponto");
-            mv.addObject("map", map);
+            mv.addObject("map", mapAlterado);
         }else{
             mv = new ModelAndView("error");
         }
