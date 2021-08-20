@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.novaeslucas.pontoeletronico.api.dtos.LancamentoDto;
 import com.novaeslucas.pontoeletronico.api.entities.Funcionario;
 import com.novaeslucas.pontoeletronico.api.entities.Lancamento;
-import com.novaeslucas.pontoeletronico.api.entities.ResponseData;
+import com.novaeslucas.pontoeletronico.api.entities.LancamentoFolhaPonto;
 import com.novaeslucas.pontoeletronico.api.enums.TipoEnum;
 import com.novaeslucas.pontoeletronico.api.exporter.ExcelFileExporter;
 import com.novaeslucas.pontoeletronico.api.response.Response;
@@ -24,8 +24,6 @@ import com.novaeslucas.pontoeletronico.api.services.FuncionarioService;
 import com.novaeslucas.pontoeletronico.api.services.LancamentoService;
 import com.novaeslucas.pontoeletronico.api.utils.DateUtils;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.poi.util.IOUtils;
 import org.slf4j.Logger;
@@ -386,8 +384,42 @@ public class LancamentoController {
                 }
             }
 
+            Map<String, LancamentoFolhaPonto> mapAlterado = new TreeMap<>();
+            for (Map.Entry<String, List<Lancamento>> entry : map.entrySet()){
+                LancamentoFolhaPonto lfp = new LancamentoFolhaPonto();
+                lfp.setData(entry.getKey());
+                if(entry.getValue() == null){
+                    mapAlterado.put(entry.getKey(), lfp);
+                }else{
+                    for(Lancamento l : entry.getValue()){
+                        switch (l.getTipo()){
+                            case INICIO_TRABALHO:
+                                lfp.setTurno1Horario1(retornarArgumentoSimpleDateFormat("HH:mm").format(l.getData()));
+                                break;
+                            case INICIO_ALMOCO:
+                                lfp.setTurno1Horario2(retornarArgumentoSimpleDateFormat("HH:mm").format(l.getData()));
+                                break;
+                            case TERMINO_ALMOCO:
+                                lfp.setTurno2Horario1(retornarArgumentoSimpleDateFormat("HH:mm").format(l.getData()));
+                                break;
+                            case TERMINO_TRABALHO:
+                                lfp.setTurno2Horario2(retornarArgumentoSimpleDateFormat("HH:mm").format(l.getData()));
+                                break;
+                            case INICIO_TURNO_EXTRA:
+                                lfp.setTurnoExtraHorario1(retornarArgumentoSimpleDateFormat("HH:mm").format(l.getData()));
+                                break;
+                            case TERMINO_TURNO_EXTRA:
+                                lfp.setTurnoExtraHorario2(retornarArgumentoSimpleDateFormat("HH:mm").format(l.getData()));
+                                break;
+                        }
+                    }
+                    lfp.setHorasDia(DateUtils.calcularHorasDia(entry.getValue()));
+                    mapAlterado.put(entry.getKey(), lfp);
+                }
+            }
+
             mv = new ModelAndView("folha_ponto");
-            mv.addObject("map", new TreeMap<>(map));
+            mv.addObject("map", mapAlterado);
         }else{
             mv = new ModelAndView("error");
         }

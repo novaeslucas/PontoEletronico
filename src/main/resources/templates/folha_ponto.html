@@ -19,7 +19,7 @@
                     <th scope="col">Data</th>
                     <th scope="col" colspan="2">Turno 1</th>
                     <th scope="col" colspan="2">Turno 2</th>
-                    <th scope="col" colspan="2">Horas do dia</th>
+                    <th scope="col" colspan="2">Total</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -27,36 +27,21 @@
                     <td>
                         <span th:text="${elemento.key}"/>
                     </td>
-                    <span th:if="${elemento.value == null}">
-                        <td>
-                            <span>-</span>
-                        </td>
-                        <td>
-                            <span>-</span>
-                        </td>
-                        <td>
-                            <span>-</span>
-                        </td>
-                        <td>
-                            <span>-</span>
-                        </td>
-                        <td>
-                            <span>-</span>
-                        </td>
-                    </span>
-                    <span th:unless="${elemento.value == null}">
-                        <span th:each="lancamento, stat : ${elemento.value}">
-                            <span th:if="${stat.last == true && stat.index < 2}">-</span>
-                            <span th:switch="${lancamento.tipo}">
-                                <td>
-                                    <span th:text="${#dates.format(lancamento.data, 'HH:mm')}"/>
-                                </td>
-                            </span>
-                        </span>
-                        <td>
-                            <span th:text="${@dateUtils.calcularHorasDia(elemento.value)}"/>
-                        </td>
-                    </span>
+                    <td>
+                        <span th:text="${elemento.value.turno1Horario1 != null ? elemento.value.turno1Horario1 : '-'}"/>
+                    </td>
+                    <td>
+                        <span th:text="${elemento.value.turno1Horario2 != null ? elemento.value.turno1Horario2 : '-'}"/>
+                    </td>
+                    <td>
+                        <span th:text="${elemento.value.turno2Horario1 != null ? elemento.value.turno2Horario1 : '-'}"/>
+                    </td>
+                    <td>
+                        <span th:text="${elemento.value.turno2Horario2 != null ? elemento.value.turno2Horario2 : '-'}"/>
+                    </td>
+                    <td>
+                        <span th:text="${elemento.value.horasDia != null ? elemento.value.horasDia : '-'}"/>
+                    </td>
                 </tr>
                 </tbody>
             </table>
