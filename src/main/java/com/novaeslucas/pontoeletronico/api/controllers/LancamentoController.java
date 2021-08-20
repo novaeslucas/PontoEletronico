@@ -206,6 +206,13 @@ public class LancamentoController {
 
     @ApiOperation(value = "Lança um ponto no sistema de ponto eletrônico", httpMethod = "GET")
     @GetMapping(value = "/qrcode/{id}")
+    public ModelAndView preLancarPonto(@PathVariable("id") Long id) {
+        ModelAndView mv = new ModelAndView("lancar_ponto");
+        mv.addObject("id", id);
+        return mv;
+    }
+
+    @PostMapping(value = "/lancar-ponto/{id}")
     public ModelAndView lancarPonto(@PathVariable("id") Long id) {
         LancamentoDto lancamentoDto = new LancamentoDto();
 
@@ -268,7 +275,7 @@ public class LancamentoController {
 
         return mv;
     }
-
+    
     private TipoEnum obterTipoLancamento(String dataDto) {
         Date dataInicial = alterarTempoData(dataDto, 0, 0);
         Date dataFinal = alterarTempoData(dataDto, 23, 59);
