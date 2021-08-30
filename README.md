@@ -1,5 +1,5 @@
 # PontoEletronico
-Projeto de Ponto Eletrônico utlizando SpringBoot.
+Projeto de Ponto Eletrônico utlizando SpringBoot
 
 Projeto base https://github.com/Nosbielc/PontoEletronico
 ### Detalhes da API RESTful
