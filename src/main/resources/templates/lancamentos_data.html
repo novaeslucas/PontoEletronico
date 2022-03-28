@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" layout:decorate="~{fragments/main_layout}">
+<head>
+    <title>Ponto Eletrônico</title>
+</head>
+<body>
+<div>
+    <div layout:fragment="content">
+        <div class="titulo-pagina">
+            <div class="container text-center h2">
+                <strong>Editar lançamentos</strong>
+            </div>
+        </div>
+        <br/>
+        <div class="container">
+            <form action="#" th:action="@{/api/lancamentos/lancar-periodo/{id}(id=${id})/{data}(data=${data})}" th:method="post" th:object="${lancamentosDia}">
+                <span>Para registrar o ponto, por favor confirme clicando no botão abaixo.</span>
+                <br/>
+                <br/>
+                <button type="submit" class="btn btn-success">Confirmar</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
