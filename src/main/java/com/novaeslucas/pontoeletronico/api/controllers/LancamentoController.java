@@ -6,6 +6,10 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -17,6 +21,7 @@ import com.novaeslucas.pontoeletronico.api.dtos.LancamentoDto;
 import com.novaeslucas.pontoeletronico.api.entities.Funcionario;
 import com.novaeslucas.pontoeletronico.api.entities.Lancamento;
 import com.novaeslucas.pontoeletronico.api.entities.LancamentoFolhaPonto;
+import com.novaeslucas.pontoeletronico.api.entities.LancamentosData;
 import com.novaeslucas.pontoeletronico.api.enums.TipoEnum;
 import com.novaeslucas.pontoeletronico.api.exporter.ExcelFileExporter;
 import com.novaeslucas.pontoeletronico.api.response.Response;
@@ -35,6 +40,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -345,6 +351,20 @@ public class LancamentoController {
         return data;
     }
 
+    private Date alterarDiaHoraData(Date data, boolean primeiroDia){
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(data);
+        if(primeiroDia){
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+        }else{
+            cal.set(Calendar.HOUR_OF_DAY, 23);
+            cal.set(Calendar.MINUTE, 59);
+        }
+        data = cal.getTime();
+        return data;
+    }
+
     private String formatarDataPagina(Date dataLancamento){
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
         return formatter.format(dataLancamento);
@@ -354,7 +374,7 @@ public class LancamentoController {
     public ResponseEntity<Object> downloadRelatorioMensal(@PathVariable("id") Long id, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date data, HttpServletResponse response) throws IOException {
         Date dataInicialMes = this.alterarDiaHoraData(retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(data), true);
         Date dataFinalMes = this.alterarDiaHoraData(retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(data), false);
-        List<Lancamento> lancamentosMes = this.lancamentoService.buscarPorDataFuncionarioId(dataInicialMes, dataFinalMes, id);
+        List<Lancamento> lancamentosMes = this.lancamentoService.buscarPorDatasFuncionarioId(dataInicialMes, dataFinalMes, id);
         if(lancamentosMes.size() > 0){
             response.setContentType("application/octet-stream");
             response.setHeader("Content-Disposition", "attachment; filename=lancamentos.xlsx");
@@ -374,7 +394,7 @@ public class LancamentoController {
         Date hoje = new Date();
         Date dataInicialMes = this.alterarDiaHoraData(retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(hoje), true);
         Date dataFinalMes = this.alterarDiaHoraData(retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(hoje), false);
-        List<Lancamento> lancamentosMes = this.lancamentoService.buscarPorDataFuncionarioId(dataInicialMes, dataFinalMes, id);
+        List<Lancamento> lancamentosMes = this.lancamentoService.buscarPorDatasFuncionarioId(dataInicialMes, dataFinalMes, id);
 
         Calendar cal = Calendar.getInstance();
         cal.setTime(dataFinalMes);
@@ -430,7 +450,44 @@ public class LancamentoController {
         }else{
             mv = new ModelAndView("error");
         }
+        return mv;
+    }
 
+    @GetMapping(value = "/lancamentos-data/{id}/{data}")
+    public ModelAndView lancamentosData(@PathVariable("id") Long id, @PathVariable("data") @DateTimeFormat(pattern = "yyyy-MM-dd") Date data) {
+        List<Lancamento> lancamentos = this.lancamentoService.buscarPorDatasFuncionarioId(this.alterarDiaHoraData(data, true), this.alterarDiaHoraData(data, false), id);
+        LancamentosData lancamentosData = new LancamentosData();
+        lancamentosData.setIdFuncionario(id);
+        lancamentosData.setDataAtualizacao(new Date());
+        for (Lancamento l: lancamentos) {
+            Date input = l.getData();
+            Instant instant = input.toInstant();
+            ZonedDateTime zdt = instant.atZone(ZoneId.systemDefault());
+            LocalTime hora = zdt.toLocalTime();
+            switch (l.getTipo()){
+                case INICIO_TRABALHO:
+                    lancamentosData.setInicioTrabalho(hora);
+                    break;
+                case INICIO_ALMOCO:
+                    lancamentosData.setInicioAlmoco(hora);
+                    break;
+                case TERMINO_ALMOCO:
+                    lancamentosData.setTerminoAlmoco(hora);
+                    break;
+                case TERMINO_TRABALHO:
+                    lancamentosData.setTerminoTrabalho(hora);
+                    break;
+                case INICIO_TURNO_EXTRA:
+                    lancamentosData.setInicioTurnoExtra(hora);
+                    break;
+                case TERMINO_TURNO_EXTRA:
+                    lancamentosData.setTerminoTurnoExtra(hora);
+                    break;
+            }
+        }
+
+        ModelAndView mv = new ModelAndView("lancamentos_data");
+        mv.addObject("lancamentosData", lancamentosData);
         return mv;
     }
 }

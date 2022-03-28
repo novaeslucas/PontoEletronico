@@ -13,11 +13,28 @@
         </div>
         <br/>
         <div class="container">
-            <form action="#" th:action="@{/api/lancamentos/lancar-periodo/{id}(id=${id})/{data}(data=${data})}" th:method="post" th:object="${lancamentosDia}">
-                <span>Para registrar o ponto, por favor confirme clicando no botão abaixo.</span>
+            <form action="#" th:action="@{/api/lancamentos/lancar-periodo/{id}(id=${id})/{data}(data=${data})}" th:method="post" th:object="${lancamentosData}">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="inicioTrabalho">Início trabalho</label>
+                        <input type="time" id="inicioTrabalho" th:value="${lancamentosData.inicioTrabalho}"/>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="inicioAlmoco">Início almoço</label>
+                        <input type="time" id="inicioAlmoco" th:value="${lancamentosData.inicioAlmoco}"/>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="terminoAlmoco">Término almoço</label>
+                        <input type="time" id="terminoAlmoco" th:value="${lancamentosData.terminoAlmoco}"/>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="terminoTrabalho">Término trabalho</label>
+                        <input type="time" id="terminoTrabalho" th:value="${lancamentosData.terminoTrabalho}"/>
+                    </div>
+                </div>
                 <br/>
                 <br/>
-                <button type="submit" class="btn btn-success">Confirmar</button>
+                <input type="submit" value="Add User">
             </form>
         </div>
     </div>

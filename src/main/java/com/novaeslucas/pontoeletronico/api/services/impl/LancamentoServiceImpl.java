@@ -60,9 +60,14 @@ public class LancamentoServiceImpl implements LancamentoService {
         return this.lancamentoRepository.findByData(dataInicial, dataFinal);
     }
 
-    public List<Lancamento> buscarPorDataFuncionarioId(Date dataInicial, Date dataFinal, Long funcionarioId) {
+    public List<Lancamento> buscarPorDatasFuncionarioId(Date dataInicial, Date dataFinal, Long funcionarioId) {
         log.info("Buscando um lançamento pela data {}", dataInicial, dataFinal, funcionarioId);
-        return this.lancamentoRepository.findByDataFuncionarioId(dataInicial, dataFinal, funcionarioId);
+        return this.lancamentoRepository.findByDatasFuncionarioId(dataInicial, dataFinal, funcionarioId);
+    }
+
+    public List<Lancamento> buscarPorDataFuncionarioId(Date data, Long funcionarioId) {
+        log.info("Buscando lançamentos pela data e pelo funcionario{}", data, funcionarioId);
+        return this.lancamentoRepository.findByDataFuncionarioId(data, funcionarioId);
     }
 
 }

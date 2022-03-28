@@ -1,14 +1,17 @@
 package com.novaeslucas.pontoeletronico.api.entities;
 
+import java.time.LocalTime;
 import java.util.Date;
 
-public class LandamentosData {
+public class LancamentosData {
 
     Long idFuncionario;
-    Date inicioTrabalho;
-    Date inicioAlmoco;
-    Date terminoAlmoco;
-    Date terminoTrabalho;
+    LocalTime inicioTrabalho;
+    LocalTime inicioAlmoco;
+    LocalTime terminoAlmoco;
+    LocalTime terminoTrabalho;
+    LocalTime inicioTurnoExtra;
+    LocalTime terminoTurnoExtra;
     Date dataAtualizacao;
 
     public Long getIdFuncionario() {
@@ -19,36 +22,52 @@ public class LandamentosData {
         this.idFuncionario = idFuncionario;
     }
 
-    public Date getInicioTrabalho() {
+    public LocalTime getInicioTrabalho() {
         return inicioTrabalho;
     }
 
-    public void setInicioTrabalho(Date inicioTrabalho) {
+    public void setInicioTrabalho(LocalTime inicioTrabalho) {
         this.inicioTrabalho = inicioTrabalho;
     }
 
-    public Date getInicioAlmoco() {
+    public LocalTime getInicioAlmoco() {
         return inicioAlmoco;
     }
 
-    public void setInicioAlmoco(Date inicioAlmoco) {
+    public void setInicioAlmoco(LocalTime inicioAlmoco) {
         this.inicioAlmoco = inicioAlmoco;
     }
 
-    public Date getTerminoAlmoco() {
+    public LocalTime getTerminoAlmoco() {
         return terminoAlmoco;
     }
 
-    public void setTerminoAlmoco(Date terminoAlmoco) {
+    public void setTerminoAlmoco(LocalTime terminoAlmoco) {
         this.terminoAlmoco = terminoAlmoco;
     }
 
-    public Date getTerminoTrabalho() {
+    public LocalTime getTerminoTrabalho() {
         return terminoTrabalho;
     }
 
-    public void setTerminoTrabalho(Date terminoTrabalho) {
+    public void setTerminoTrabalho(LocalTime terminoTrabalho) {
         this.terminoTrabalho = terminoTrabalho;
+    }
+
+    public LocalTime getInicioTurnoExtra() {
+        return inicioTurnoExtra;
+    }
+
+    public void setInicioTurnoExtra(LocalTime inicioTurnoExtra) {
+        this.inicioTurnoExtra = inicioTurnoExtra;
+    }
+
+    public LocalTime getTerminoTurnoExtra() {
+        return terminoTurnoExtra;
+    }
+
+    public void setTerminoTurnoExtra(LocalTime terminoTurnoExtra) {
+        this.terminoTurnoExtra = terminoTurnoExtra;
     }
 
     public Date getDataAtualizacao() {
