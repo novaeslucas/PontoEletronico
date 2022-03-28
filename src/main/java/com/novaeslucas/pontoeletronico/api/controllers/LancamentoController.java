@@ -18,6 +18,7 @@ import javax.validation.Valid;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.novaeslucas.pontoeletronico.api.dtos.LancamentoDto;
+import com.novaeslucas.pontoeletronico.api.dtos.LancamentosDataDto;
 import com.novaeslucas.pontoeletronico.api.entities.Funcionario;
 import com.novaeslucas.pontoeletronico.api.entities.Lancamento;
 import com.novaeslucas.pontoeletronico.api.entities.LancamentoFolhaPonto;
@@ -454,7 +455,7 @@ public class LancamentoController {
     }
 
     @GetMapping(value = "/lancamentos-data/{id}/{data}")
-    public ModelAndView lancamentosData(@PathVariable("id") Long id, @PathVariable("data") @DateTimeFormat(pattern = "yyyy-MM-dd") Date data) {
+    public ModelAndView lancamentosData(@PathVariable("id") Long id, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date data) {
         List<Lancamento> lancamentos = this.lancamentoService.buscarPorDatasFuncionarioId(this.alterarDiaHoraData(data, true), this.alterarDiaHoraData(data, false), id);
         LancamentosData lancamentosData = new LancamentosData();
         lancamentosData.setIdFuncionario(id);
@@ -488,6 +489,16 @@ public class LancamentoController {
 
         ModelAndView mv = new ModelAndView("lancamentos_data");
         mv.addObject("lancamentosData", lancamentosData);
+        mv.addObject("idFuncionario", id);
+        mv.addObject("dataLancamentos", retornarArgumentoSimpleDateFormat("yyyy-MM-dd").format(data));
+        return mv;
+    }
+
+    @PostMapping(value = "/editar-lancamentos/{id}/{data}")
+    public ModelAndView editarLancamentos(@PathVariable("id") Long id, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date data, @Valid @RequestBody LancamentosDataDto lancamentosDataDto, BindingResult result){
+        
+
+        ModelAndView mv = null;
         return mv;
     }
 }

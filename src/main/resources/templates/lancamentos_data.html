@@ -13,28 +13,28 @@
         </div>
         <br/>
         <div class="container">
-            <form action="#" th:action="@{/api/lancamentos/lancar-periodo/{id}(id=${id})/{data}(data=${data})}" th:method="post" th:object="${lancamentosData}">
+            <form action="#" th:action="@{/api/lancamentos/editar-lancamentos/{id}/{data}(id=${idFuncionario}, data=${dataLancamentos})}" th:method="post" th:object="${lancamentosData}">
                 <div class="row">
                     <div class="col-md-3">
                         <label for="inicioTrabalho">Início trabalho</label>
-                        <input type="time" id="inicioTrabalho" th:value="${lancamentosData.inicioTrabalho}"/>
+                        <input type="time" id="inicioTrabalho" th:value="${lancamentosData.inicioTrabalho}" th:field="${lancamentosData.inicioTrabalho}"/>
                     </div>
                     <div class="col-md-3">
                         <label for="inicioAlmoco">Início almoço</label>
-                        <input type="time" id="inicioAlmoco" th:value="${lancamentosData.inicioAlmoco}"/>
+                        <input type="time" id="inicioAlmoco" th:value="${lancamentosData.inicioAlmoco}" th:field="${lancamentosData.inicioAlmoco}"/>
                     </div>
                     <div class="col-md-3">
                         <label for="terminoAlmoco">Término almoço</label>
-                        <input type="time" id="terminoAlmoco" th:value="${lancamentosData.terminoAlmoco}"/>
+                        <input type="time" id="terminoAlmoco" th:value="${lancamentosData.terminoAlmoco}" th:field="${lancamentosData.terminoAlmoco}"/>
                     </div>
                     <div class="col-md-3">
                         <label for="terminoTrabalho">Término trabalho</label>
-                        <input type="time" id="terminoTrabalho" th:value="${lancamentosData.terminoTrabalho}"/>
+                        <input type="time" id="terminoTrabalho" th:value="${lancamentosData.terminoTrabalho}" th:field="${lancamentosData.terminoTrabalho}"/>
                     </div>
                 </div>
                 <br/>
                 <br/>
-                <input type="submit" value="Add User">
+                <input type="submit" value="Editar" class="btn btn-info">
             </form>
         </div>
     </div>
