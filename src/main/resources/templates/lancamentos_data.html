@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" layout:decorate="~{fragments/main_layout}">
+<head>
+    <title>Ponto Eletrônico</title>
+</head>
+<body>
+<div>
+    <div layout:fragment="content">
+        <div class="titulo-pagina">
+            <div class="container text-center h2">
+                <strong>Editar lançamentos do dia <span th:text="${#dates.format(lancamentosData.data, 'dd/MM/yyyy')}"/></strong>
+            </div>
+        </div>
+        <br/>
+        <div class="container">
+            <form action="#" th:action="@{/api/lancamentos/lancamentos-data/{funcionarioId}/{data}(funcionarioId=${lancamentosData.idFuncionario}, data=${#dates.format(lancamentosData.data, 'yyyy-MM-dd')})}" th:method="post" th:object="${lancamentosData}">
+                <input type="hidden" th:value="${lancamentosData.inicioTrabalho}" th:name="inicioTrabalhoAntigo"/>
+                <input type="hidden" th:value="${lancamentosData.inicioAlmoco}" th:name="inicioAlmocoAntigo"/>
+                <input type="hidden" th:value="${lancamentosData.terminoAlmoco}" th:name="terminoAlmocoAntigo"/>
+                <input type="hidden" th:value="${lancamentosData.terminoTrabalho}" th:name="terminoTrabalhoAntigo"/>
+                <input type="hidden" th:value="${lancamentosData.inicioTurnoExtra}" th:name="inicioTurnoExtraAntigo"/>
+                <input type="hidden" th:value="${lancamentosData.terminoTurnoExtra}" th:name="terminoTurnoExtraAntigo"/>
+                <div class="row mb-2">
+                    <div class="form-group col-md-3">
+                        <label for="inicioTrabalho">Início trabalho</label>
+                        <input type="time" id="inicioTrabalho" class="form-control" step="2" th:value="${lancamentosData.inicioTrabalho != null ? lancamentosData.inicioTrabalho : '00:00'}" th:field="*{inicioTrabalho}"/>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label for="inicioAlmoco">Início almoço</label>
+                        <input type="time" id="inicioAlmoco" class="form-control" step="2" th:value="${lancamentosData.inicioAlmoco != null ? lancamentosData.inicioAlmoco : '00:00'}" th:field="*{inicioAlmoco}"/>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label for="terminoAlmoco">Término almoço</label>
+                        <input type="time" id="terminoAlmoco" class="form-control" step="2" th:value="${lancamentosData.terminoAlmoco != null ? lancamentosData.terminoAlmoco : '00:00'}" th:field="*{terminoAlmoco}"/>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label for="terminoTrabalho">Término trabalho</label>
+                        <input type="time" id="terminoTrabalho" class="form-control" step="2" th:value="${lancamentosData.terminoTrabalho != null ? lancamentosData.terminoTrabalho : '00:00'}" th:field="*{terminoTrabalho}"/>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="form-group col-md-3">
+                        <label for="inicioTurnoExtra">Início turno extra</label>
+                        <input type="time" id="inicioTurnoExtra" class="form-control" step="2" th:value="${lancamentosData.inicioTurnoExtra != null ? lancamentosData.inicioTurnoExtra : '00:00'}" th:field="*{inicioTurnoExtra}"/>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label for="terminoTurnoExtra">Término turno extra</label>
+                        <input type="time" id="terminoTurnoExtra" class="form-control" step="2" th:value="${lancamentosData.terminoTurnoExtra != null ? lancamentosData.terminoTurnoExtra : '00:00'}" th:field="*{terminoTurnoExtra}"/>
+                    </div>
+                </div>
+                <br/>
+                <input type="submit" value="Editar" class="btn btn-info">
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -58,7 +59,7 @@ public class ExcelFileExporter {
                     c++;
                     for (Lancamento lancamento : lancamentoPorData) {
                         Cell horaLancamentoCelula = row.createCell(c);
-                        horaLancamentoCelula.setCellValue(lancamento.getData());
+                        horaLancamentoCelula.setCellValue(converterDataParaHora(lancamento.getData()));
                         horaLancamentoCelula.setCellStyle(cellStyleHora);
                         c++;
                     }
@@ -95,5 +96,10 @@ public class ExcelFileExporter {
                 break;
         }
         return cellStyle;
+    }
+
+    private static String converterDataParaHora(Date data){
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        return sdf.format(data);
     }
 }

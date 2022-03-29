@@ -24,5 +24,8 @@ public interface LancamentoRepository extends JpaRepository<Lancamento, Long> {
     List<Lancamento> findByData(@Param("dataInicial") Date dataInicial, @Param("dataFinal") Date dataFinal);
 
     @Query("SELECT lanc FROM Lancamento lanc WHERE lanc.data between :dataInicial and :dataFinal and lanc.funcionario.id = :funcionarioId ORDER BY lanc.data ASC")
-    List<Lancamento> findByDataFuncionarioId(@Param("dataInicial") Date dataInicial, @Param("dataFinal") Date dataFinal, @Param("funcionarioId")Long funcionarioId);
+    List<Lancamento> findByDatasFuncionarioId(@Param("dataInicial") Date dataInicial, @Param("dataFinal") Date dataFinal, @Param("funcionarioId")Long funcionarioId);
+
+    @Query("SELECT lanc FROM Lancamento lanc WHERE lanc.data = :data and lanc.funcionario.id = :funcionarioId")
+    Lancamento findByDataFuncionarioId(@Param("data") Date data, @Param("funcionarioId")Long funcionarioId);
 }

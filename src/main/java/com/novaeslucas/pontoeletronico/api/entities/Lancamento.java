@@ -1,6 +1,7 @@
 package com.novaeslucas.pontoeletronico.api.entities;
 
 import com.novaeslucas.pontoeletronico.api.enums.TipoEnum;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -36,7 +37,7 @@ public class Lancamento implements Serializable {
     private Funcionario funcionario;
 
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     public Long getId() {
         return id;
     }
