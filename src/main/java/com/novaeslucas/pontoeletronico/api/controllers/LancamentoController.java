@@ -62,6 +62,7 @@ public class LancamentoController {
     private int qtdPorPagina;
 
     private static final String EMPTY = "";
+    private static final String ESPACO = " ";
 
     public LancamentoController(LancamentoService lancamentoService, FuncionarioService funcionarioService) {
         this.lancamentoService = lancamentoService;
@@ -502,35 +503,48 @@ public class LancamentoController {
     @PostMapping(value = "/lancamentos-data/{funcionarioId}/{data}")
     public ModelAndView lancamentosDataEdit(@PathVariable("funcionarioId") Long funcionarioId, @PathVariable("data") String data, @Valid @ModelAttribute("lancamentosDataDto") LancamentosDataDto lancamentosDataDto, BindingResult result){
         if(lancamentosDataDto.getInicioTrabalho() != null && !lancamentosDataDto.getInicioTrabalho().isEmpty()){
-            String aux = lancamentosDataDto.getData() + lancamentosDataDto.getInicioTrabalho();
-            try {
-                List<Lancamento> lancamentos = this.lancamentoService.buscarPorDatasFuncionarioId(alterarDiaHoraSegundosData(new SimpleDateFormat("yyyy-MM-dd hh:mm").parse(aux), true), alterarDiaHoraSegundosData(new SimpleDateFormat("yyyy-MM-dd hh:mm").parse(aux), false), funcionarioId);
-                if(!lancamentos.isEmpty()){
-                    Lancamento l = lancamentos.get(0);
-                    //persistir
-                }
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
+            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioTrabalho(), TipoEnum.INICIO_TRABALHO.toString(), result);
         }
-
+        if(lancamentosDataDto.getInicioAlmoco() != null && !lancamentosDataDto.getInicioAlmoco().isEmpty()){
+            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioAlmoco(), TipoEnum.INICIO_ALMOCO.toString(), result);
+        }
+        if(lancamentosDataDto.getTerminoAlmoco() != null && !lancamentosDataDto.getTerminoAlmoco().isEmpty()){
+            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoAlmoco(), TipoEnum.TERMINO_ALMOCO.toString(), result);
+        }
+        if(lancamentosDataDto.getTerminoTrabalho() != null && !lancamentosDataDto.getTerminoTrabalho().isEmpty()){
+            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoTrabalho(), TipoEnum.TERMINO_TRABALHO.toString(), result);
+        }
+        if(lancamentosDataDto.getInicioTurnoExtra() != null && !lancamentosDataDto.getInicioTurnoExtra().isEmpty()){
+            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioTurnoExtra(), TipoEnum.INICIO_TURNO_EXTRA.toString(), result);
+        }
+        if(lancamentosDataDto.getTerminoTurnoExtra() != null && !lancamentosDataDto.getTerminoTurnoExtra().isEmpty()){
+            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoTurnoExtra(), TipoEnum.TERMINO_TURNO_EXTRA.toString(), result);
+        }
         ModelAndView mv = new ModelAndView("lancamento_editado");
         return mv;
     }
 
-    private LancamentoDto prepararLancamentoInsert(Long funcionarioId, String data, String tipoLancamento) {
-        LancamentoDto lancamentoDto = new LancamentoDto();
-        lancamentoDto.setFuncionarioId(funcionarioId);
-        lancamentoDto.setData(data);
-        lancamentoDto.setTipo(tipoLancamento);
-        return lancamentoDto;
+    private void persistirLancamentosData(Long funcionarioId, String dataCompleta, String tipoLancamento, BindingResult result) {
+        try {
+            Date dataConvertida = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(dataCompleta);
+            List<Lancamento> lancamentos = this.lancamentoService.buscarPorDatasFuncionarioId(alterarDiaHoraSegundosData(dataConvertida, true), alterarDiaHoraSegundosData(dataConvertida, false), funcionarioId);
+            if(!lancamentos.isEmpty()){
+                Lancamento l = lancamentos.get(0);
+                LancamentoDto editLancamento = new LancamentoDto();
+                editLancamento.setData(dataCompleta);
+                editLancamento.setFuncionarioId(l.getFuncionario().getId());
+                editLancamento.setTipo(l.getTipo().toString());
+                this.persistir(l.getId(), editLancamento, result, true);
+            }else {
+                LancamentoDto novoLancamento = new LancamentoDto();
+                novoLancamento.setData(dataCompleta);
+                novoLancamento.setFuncionarioId(funcionarioId);
+                novoLancamento.setTipo(tipoLancamento);
+                this.persistir(null, novoLancamento, result, false);
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 
-    private void preparaLancamentoUpdate(Long funcionarioId, Long lancamentoId, String dataAtualizada, String tipoLancamento, BindingResult result) {
-        LancamentoDto lancamentoDto = new LancamentoDto();
-        lancamentoDto.setData(dataAtualizada);
-        lancamentoDto.setTipo(tipoLancamento);
-        lancamentoDto.setFuncionarioId(funcionarioId);
-        this.persistir(lancamentoId, lancamentoDto, result, true);
-    }
 }
