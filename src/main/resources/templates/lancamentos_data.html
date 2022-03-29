@@ -8,31 +8,40 @@
     <div layout:fragment="content">
         <div class="titulo-pagina">
             <div class="container text-center h2">
-                <strong>Editar lançamentos</strong>
+                <strong>Editar lançamentos do dia <span th:text="${#dates.format(lancamentosData.data, 'dd/MM/yyyy')}"/></strong>
             </div>
         </div>
         <br/>
         <div class="container">
-            <form action="#" th:action="@{/api/lancamentos/editar-lancamentos/{id}/{data}(id=${idFuncionario}, data=${dataLancamentos})}" th:method="post" th:object="${lancamentosData}">
-                <div class="row">
-                    <div class="col-md-3">
+            <form action="#" th:action="@{/api/lancamentos/lancamentos-data/{funcionarioId}/{data}(funcionarioId=${lancamentosData.idFuncionario}, data=${#dates.format(lancamentosData.data, 'yyyy-MM-dd')})}" th:method="post" th:object="${lancamentosData}">
+                <div class="row mb-2">
+                    <div class="form-group col-md-3">
                         <label for="inicioTrabalho">Início trabalho</label>
-                        <input type="time" id="inicioTrabalho" th:value="${lancamentosData.inicioTrabalho}" th:field="${lancamentosData.inicioTrabalho}"/>
+                        <input type="time" id="inicioTrabalho" class="form-control" th:value="${lancamentosData.inicioTrabalho != null ? lancamentosData.inicioTrabalho : '00:00'}" th:field="*{inicioTrabalho}"/>
                     </div>
-                    <div class="col-md-3">
+                    <div class="form-group col-md-3">
                         <label for="inicioAlmoco">Início almoço</label>
-                        <input type="time" id="inicioAlmoco" th:value="${lancamentosData.inicioAlmoco}" th:field="${lancamentosData.inicioAlmoco}"/>
+                        <input type="time" id="inicioAlmoco" class="form-control" th:value="${lancamentosData.inicioAlmoco != null ? lancamentosData.inicioAlmoco : '00:00'}" th:field="*{inicioAlmoco}"/>
                     </div>
-                    <div class="col-md-3">
+                    <div class="form-group col-md-3">
                         <label for="terminoAlmoco">Término almoço</label>
-                        <input type="time" id="terminoAlmoco" th:value="${lancamentosData.terminoAlmoco}" th:field="${lancamentosData.terminoAlmoco}"/>
+                        <input type="time" id="terminoAlmoco" class="form-control" th:value="${lancamentosData.terminoAlmoco != null ? lancamentosData.terminoAlmoco : '00:00'}" th:field="*{terminoAlmoco}"/>
                     </div>
-                    <div class="col-md-3">
+                    <div class="form-group col-md-3">
                         <label for="terminoTrabalho">Término trabalho</label>
-                        <input type="time" id="terminoTrabalho" th:value="${lancamentosData.terminoTrabalho}" th:field="${lancamentosData.terminoTrabalho}"/>
+                        <input type="time" id="terminoTrabalho" class="form-control" th:value="${lancamentosData.terminoTrabalho != null ? lancamentosData.terminoTrabalho : '00:00'}" th:field="*{terminoTrabalho}"/>
                     </div>
                 </div>
-                <br/>
+                <div class="row mb-2">
+                    <div class="form-group col-md-3">
+                        <label for="inicioTurnoExtra">Início turno extra</label>
+                        <input type="time" id="inicioTurnoExtra" class="form-control" th:value="${lancamentosData.inicioTurnoExtra != null ? lancamentosData.inicioTurnoExtra : '00:00'}" th:field="*{inicioTurnoExtra}"/>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label for="terminoTurnoExtra">Término turno extra</label>
+                        <input type="time" id="terminoTurnoExtra" class="form-control" th:value="${lancamentosData.terminoTurnoExtra != null ? lancamentosData.terminoTurnoExtra : '00:00'}" th:field="*{terminoTurnoExtra}"/>
+                    </div>
+                </div>
                 <br/>
                 <input type="submit" value="Editar" class="btn btn-info">
             </form>

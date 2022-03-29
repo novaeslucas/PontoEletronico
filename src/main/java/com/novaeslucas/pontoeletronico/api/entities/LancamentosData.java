@@ -12,6 +12,7 @@ public class LancamentosData {
     LocalTime terminoTrabalho;
     LocalTime inicioTurnoExtra;
     LocalTime terminoTurnoExtra;
+    Date data;
     Date dataAtualizacao;
 
     public Long getIdFuncionario() {
@@ -76,5 +77,13 @@ public class LancamentosData {
 
     public void setDataAtualizacao(Date dataAtualizacao) {
         this.dataAtualizacao = dataAtualizacao;
+    }
+
+    public Date getData() {
+        return data;
+    }
+
+    public void setData(Date data) {
+        this.data = data;
     }
 }

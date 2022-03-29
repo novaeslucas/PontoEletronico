@@ -1,13 +1,25 @@
 package com.novaeslucas.pontoeletronico.api.dtos;
 
+import java.time.LocalTime;
+
 public class LancamentosDataDto {
 
+    Long id;
     String inicioTrabalho;
     String inicioAlmoco;
     String terminoAlmoco;
     String terminoTrabalho;
-    String inicioHoraExtra;
-    String terminoHoraExtra;
+    String inicioTurnoExtra;
+    String terminoTurnoExtra;
+    String data;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getInicioTrabalho() {
         return inicioTrabalho;
@@ -41,19 +53,27 @@ public class LancamentosDataDto {
         this.terminoTrabalho = terminoTrabalho;
     }
 
-    public String getInicioHoraExtra() {
-        return inicioHoraExtra;
+    public String getInicioTurnoExtra() {
+        return inicioTurnoExtra;
     }
 
-    public void setInicioHoraExtra(String inicioHoraExtra) {
-        this.inicioHoraExtra = inicioHoraExtra;
+    public void setInicioTurnoExtra(String inicioTurnoExtra) {
+        this.inicioTurnoExtra = inicioTurnoExtra;
     }
 
-    public String getTerminoHoraExtra() {
-        return terminoHoraExtra;
+    public String getTerminoTurnoExtra() {
+        return terminoTurnoExtra;
     }
 
-    public void setTerminoHoraExtra(String terminoHoraExtra) {
-        this.terminoHoraExtra = terminoHoraExtra;
+    public void setTerminoTurnoExtra(String terminoTurnoExtra) {
+        this.terminoTurnoExtra = terminoTurnoExtra;
+    }
+
+    public String getData() {
+        return data;
+    }
+
+    public void setData(String data) {
+        this.data = data;
     }
 }
