@@ -11,6 +11,12 @@ public class LancamentosDataDto {
     String terminoTrabalho;
     String inicioTurnoExtra;
     String terminoTurnoExtra;
+    String inicioTrabalhoAntigo;
+    String inicioAlmocoAntigo;
+    String terminoAlmocoAntigo;
+    String terminoTrabalhoAntigo;
+    String inicioTurnoExtraAntigo;
+    String terminoTurnoExtraAntigo;
     String data;
 
     public Long getId() {
@@ -75,5 +81,53 @@ public class LancamentosDataDto {
 
     public void setData(String data) {
         this.data = data;
+    }
+
+    public String getInicioTrabalhoAntigo() {
+        return inicioTrabalhoAntigo;
+    }
+
+    public void setInicioTrabalhoAntigo(String inicioTrabalhoAntigo) {
+        this.inicioTrabalhoAntigo = inicioTrabalhoAntigo;
+    }
+
+    public String getInicioAlmocoAntigo() {
+        return inicioAlmocoAntigo;
+    }
+
+    public void setInicioAlmocoAntigo(String inicioAlmocoAntigo) {
+        this.inicioAlmocoAntigo = inicioAlmocoAntigo;
+    }
+
+    public String getTerminoAlmocoAntigo() {
+        return terminoAlmocoAntigo;
+    }
+
+    public void setTerminoAlmocoAntigo(String terminoAlmocoAntigo) {
+        this.terminoAlmocoAntigo = terminoAlmocoAntigo;
+    }
+
+    public String getTerminoTrabalhoAntigo() {
+        return terminoTrabalhoAntigo;
+    }
+
+    public void setTerminoTrabalhoAntigo(String terminoTrabalhoAntigo) {
+        this.terminoTrabalhoAntigo = terminoTrabalhoAntigo;
+    }
+
+    public String getInicioTurnoExtraAntigo() {
+        return inicioTurnoExtraAntigo;
+    }
+
+    public void setInicioTurnoExtraAntigo(String inicioTurnoExtraAntigo) {
+        this.inicioTurnoExtraAntigo = inicioTurnoExtraAntigo;
+    }
+
+    public String getTerminoTurnoExtraAntigo() {
+        return terminoTurnoExtraAntigo;
+    }
+
+    public void setTerminoTurnoExtraAntigo(String terminoTurnoExtraAntigo) {
+        this.terminoTurnoExtraAntigo = terminoTurnoExtraAntigo;
     }
 }

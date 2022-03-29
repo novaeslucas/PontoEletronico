@@ -25,5 +25,5 @@ public interface LancamentoService {
 
     List<Lancamento> buscarPorDatasFuncionarioId(Date dataInicial, Date dataFinal, Long id);
 
-    List<Lancamento> buscarPorDataFuncionarioId(Date data, Long funcionarioId);
+    Lancamento buscarPorDataFuncionarioId(Date data, Long funcionarioId);
 }

@@ -23,9 +23,9 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="elemento : ${map}">
+                <tr th:each="elemento,iter : ${map}">
                     <td>
-                        <span th:text="${elemento.key}"/>
+                        <a style="text-decoration: none; color: #212529;" th:href="@{/api/lancamentos/lancamentos-data/{funcionarioId}/{data} (funcionarioId=${paramFuncionarioId},data=${paramData[iter.index]})}"><span th:text="${elemento.key}"/></a>
                     </td>
                     <td>
                         <span th:text="${elemento.value.turno1Horario1 != null ? elemento.value.turno1Horario1 : '-'}"/>

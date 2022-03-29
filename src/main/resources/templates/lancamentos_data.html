@@ -14,6 +14,12 @@
         <br/>
         <div class="container">
             <form action="#" th:action="@{/api/lancamentos/lancamentos-data/{funcionarioId}/{data}(funcionarioId=${lancamentosData.idFuncionario}, data=${#dates.format(lancamentosData.data, 'yyyy-MM-dd')})}" th:method="post" th:object="${lancamentosData}">
+                <input type="hidden" th:value="${lancamentosData.inicioTrabalho}" th:name="inicioTrabalhoAntigo"/>
+                <input type="hidden" th:value="${lancamentosData.inicioAlmoco}" th:name="inicioAlmocoAntigo"/>
+                <input type="hidden" th:value="${lancamentosData.terminoAlmoco}" th:name="terminoAlmocoAntigo"/>
+                <input type="hidden" th:value="${lancamentosData.terminoTrabalho}" th:name="terminoTrabalhoAntigo"/>
+                <input type="hidden" th:value="${lancamentosData.inicioTurnoExtra}" th:name="inicioTurnoExtraAntigo"/>
+                <input type="hidden" th:value="${lancamentosData.terminoTurnoExtra}" th:name="terminoTurnoExtraAntigo"/>
                 <div class="row mb-2">
                     <div class="form-group col-md-3">
                         <label for="inicioTrabalho">Início trabalho</label>

@@ -65,7 +65,7 @@ public class LancamentoServiceImpl implements LancamentoService {
         return this.lancamentoRepository.findByDatasFuncionarioId(dataInicial, dataFinal, funcionarioId);
     }
 
-    public List<Lancamento> buscarPorDataFuncionarioId(Date data, Long funcionarioId) {
+    public Lancamento buscarPorDataFuncionarioId(Date data, Long funcionarioId) {
         log.info("Buscando lançamentos pela data e pelo funcionario{}", data, funcionarioId);
         return this.lancamentoRepository.findByDataFuncionarioId(data, funcionarioId);
     }

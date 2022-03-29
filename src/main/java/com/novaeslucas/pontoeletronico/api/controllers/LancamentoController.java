@@ -41,7 +41,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
@@ -53,15 +52,10 @@ import org.springframework.web.servlet.ModelAndView;
 public class LancamentoController {
 
     private static final Logger log = LoggerFactory.getLogger(LancamentoController.class);
-
     private LancamentoService lancamentoService;
-
     private FuncionarioService funcionarioService;
-
     @Value("${paginacao.qtd_por_pagina}")
     private int qtdPorPagina;
-
-    private static final String EMPTY = "";
     private static final String ESPACO = " ";
 
     public LancamentoController(LancamentoService lancamentoService, FuncionarioService funcionarioService) {
@@ -78,7 +72,7 @@ public class LancamentoController {
 
         PageRequest pageRequest = PageRequest.of(pag, this.qtdPorPagina, Sort.by("id").descending());
         Page<Lancamento> lancamentos = this.lancamentoService.buscarPorFuncionarioId(funcionarioId, pageRequest);
-        Page<LancamentoDto> lancamentosDto = lancamentos.map(lancamento -> this.converterLancamentoDto(lancamento));
+        Page<LancamentoDto> lancamentosDto = lancamentos.map(this::converterLancamentoDto);
 
         response.setData(lancamentosDto);
         return ResponseEntity.ok(response);
@@ -360,18 +354,6 @@ public class LancamentoController {
         return data;
     }
 
-    private Date alterarDiaHoraSegundosData(Date data, boolean primeiroDia){
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(data);
-        if(primeiroDia){
-            cal.set(Calendar.SECOND, 0);
-        }else{
-            cal.set(Calendar.SECOND, 59);
-        }
-        data = cal.getTime();
-        return data;
-    }
-
     private String formatarDataPagina(Date dataLancamento){
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
         return formatter.format(dataLancamento);
@@ -386,6 +368,7 @@ public class LancamentoController {
             response.setContentType("application/octet-stream");
             response.setHeader("Content-Disposition", "attachment; filename=lancamentos.xlsx");
             ByteArrayInputStream stream = ExcelFileExporter.listaLancamentosToExcelFile(lancamentosMes);
+            assert stream != null;
             IOUtils.copy(stream, response.getOutputStream());
             return new ResponseEntity<>(HttpStatus.OK);
         }
@@ -406,6 +389,7 @@ public class LancamentoController {
         Calendar cal = Calendar.getInstance();
         cal.setTime(dataFinalMes);
         int ultimoDiaMes = cal.getActualMaximum(Calendar.DATE);
+        List<String> paramData = new ArrayList<>();
 
         ModelAndView mv;
         if(lancamentosMes.size() > 0){
@@ -452,8 +436,20 @@ public class LancamentoController {
                 }
             }
 
+            for (String data: mapAlterado.keySet()) {
+                Date paramDate = null;
+                try {
+                    paramDate = retornarArgumentoSimpleDateFormat("dd/MM/yyyy").parse(data);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                paramData.add(retornarArgumentoSimpleDateFormat("yyyy-MM-dd").format(paramDate));
+            }
+
             mv = new ModelAndView("folha_ponto");
             mv.addObject("map", mapAlterado);
+            mv.addObject("paramFuncionarioId", id);
+            mv.addObject("paramData", paramData);
         }else{
             mv = new ModelAndView("error");
         }
@@ -501,49 +497,50 @@ public class LancamentoController {
     }
 
     @PostMapping(value = "/lancamentos-data/{funcionarioId}/{data}")
-    public ModelAndView lancamentosDataEdit(@PathVariable("funcionarioId") Long funcionarioId, @PathVariable("data") String data, @Valid @ModelAttribute("lancamentosDataDto") LancamentosDataDto lancamentosDataDto, BindingResult result){
-        if(lancamentosDataDto.getInicioTrabalho() != null && !lancamentosDataDto.getInicioTrabalho().isEmpty()){
-            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioTrabalho(), TipoEnum.INICIO_TRABALHO.toString(), result);
+    public ModelAndView lancamentosDataEdit(@PathVariable("funcionarioId") Long funcionarioId, @Valid @ModelAttribute("lancamentosDataDto") LancamentosDataDto lancamentosDataDto, BindingResult result){
+        if(lancamentosDataDto.getInicioTrabalho() != null && !lancamentosDataDto.getInicioTrabalho().equals(lancamentosDataDto.getInicioTrabalhoAntigo())){
+            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioTrabalhoAntigo(), lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioTrabalho(), TipoEnum.INICIO_TRABALHO.toString(), result);
         }
-        if(lancamentosDataDto.getInicioAlmoco() != null && !lancamentosDataDto.getInicioAlmoco().isEmpty()){
-            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioAlmoco(), TipoEnum.INICIO_ALMOCO.toString(), result);
+        if(lancamentosDataDto.getInicioAlmoco() != null && !lancamentosDataDto.getInicioAlmoco().equals(lancamentosDataDto.getInicioAlmocoAntigo())){
+            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioAlmocoAntigo(), lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioAlmoco(), TipoEnum.INICIO_ALMOCO.toString(), result);
         }
-        if(lancamentosDataDto.getTerminoAlmoco() != null && !lancamentosDataDto.getTerminoAlmoco().isEmpty()){
-            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoAlmoco(), TipoEnum.TERMINO_ALMOCO.toString(), result);
+        if(lancamentosDataDto.getTerminoAlmoco() != null && !lancamentosDataDto.getTerminoAlmoco().equals(lancamentosDataDto.getTerminoAlmocoAntigo())){
+            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoAlmocoAntigo(), lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoAlmoco(), TipoEnum.TERMINO_ALMOCO.toString(), result);
         }
-        if(lancamentosDataDto.getTerminoTrabalho() != null && !lancamentosDataDto.getTerminoTrabalho().isEmpty()){
-            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoTrabalho(), TipoEnum.TERMINO_TRABALHO.toString(), result);
+        if(lancamentosDataDto.getTerminoTrabalho() != null && !lancamentosDataDto.getTerminoTrabalho().equals(lancamentosDataDto.getTerminoTrabalhoAntigo())){
+            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoTrabalhoAntigo(), lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoTrabalho(), TipoEnum.TERMINO_TRABALHO.toString(), result);
         }
-        if(lancamentosDataDto.getInicioTurnoExtra() != null && !lancamentosDataDto.getInicioTurnoExtra().isEmpty()){
-            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioTurnoExtra(), TipoEnum.INICIO_TURNO_EXTRA.toString(), result);
+        if(lancamentosDataDto.getInicioTurnoExtra() != null && !lancamentosDataDto.getInicioTurnoExtra().equals(lancamentosDataDto.getInicioTurnoExtraAntigo())){
+            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioTurnoExtraAntigo(), lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioTurnoExtra(), TipoEnum.INICIO_TURNO_EXTRA.toString(), result);
         }
-        if(lancamentosDataDto.getTerminoTurnoExtra() != null && !lancamentosDataDto.getTerminoTurnoExtra().isEmpty()){
-            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoTurnoExtra(), TipoEnum.TERMINO_TURNO_EXTRA.toString(), result);
+        if(lancamentosDataDto.getTerminoTurnoExtra() != null && !lancamentosDataDto.getTerminoTurnoExtra().equals(lancamentosDataDto.getTerminoTurnoExtraAntigo())){
+            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoTurnoExtraAntigo(), lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoTurnoExtra(), TipoEnum.TERMINO_TURNO_EXTRA.toString(), result);
         }
-        ModelAndView mv = new ModelAndView("lancamento_editado");
-        return mv;
+
+        //verificar se erros no result e retornar para pagina de erro se erro
+        return new ModelAndView("lancamento_editado");
     }
 
-    private void persistirLancamentosData(Long funcionarioId, String dataCompleta, String tipoLancamento, BindingResult result) {
+    private void persistirLancamentosData(Long funcionarioId, String lancamentoAntigo, String novaDataCompleta, String tipoLancamento, BindingResult result) {
+        Date dataAntigaConvertida = null;
         try {
-            Date dataConvertida = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(dataCompleta);
-            List<Lancamento> lancamentos = this.lancamentoService.buscarPorDatasFuncionarioId(alterarDiaHoraSegundosData(dataConvertida, true), alterarDiaHoraSegundosData(dataConvertida, false), funcionarioId);
-            if(!lancamentos.isEmpty()){
-                Lancamento l = lancamentos.get(0);
-                LancamentoDto editLancamento = new LancamentoDto();
-                editLancamento.setData(dataCompleta);
-                editLancamento.setFuncionarioId(l.getFuncionario().getId());
-                editLancamento.setTipo(l.getTipo().toString());
-                this.persistir(l.getId(), editLancamento, result, true);
-            }else {
-                LancamentoDto novoLancamento = new LancamentoDto();
-                novoLancamento.setData(dataCompleta);
-                novoLancamento.setFuncionarioId(funcionarioId);
-                novoLancamento.setTipo(tipoLancamento);
-                this.persistir(null, novoLancamento, result, false);
-            }
+            dataAntigaConvertida = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(lancamentoAntigo);
         } catch (ParseException e) {
             e.printStackTrace();
+        }
+        Lancamento l = this.lancamentoService.buscarPorDataFuncionarioId(dataAntigaConvertida, funcionarioId);
+        if(l != null){
+            LancamentoDto editLancamento = new LancamentoDto();
+            editLancamento.setData(novaDataCompleta);
+            editLancamento.setFuncionarioId(l.getFuncionario().getId());
+            editLancamento.setTipo(l.getTipo().toString());
+            this.persistir(l.getId(), editLancamento, result, true);
+        }else {
+            LancamentoDto novoLancamento = new LancamentoDto();
+            novoLancamento.setData(novaDataCompleta);
+            novoLancamento.setFuncionarioId(funcionarioId);
+            novoLancamento.setTipo(tipoLancamento);
+            this.persistir(null, novoLancamento, result, false);
         }
     }
 
