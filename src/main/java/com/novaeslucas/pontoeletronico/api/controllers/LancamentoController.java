@@ -6,6 +6,10 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -14,9 +18,11 @@ import javax.validation.Valid;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.novaeslucas.pontoeletronico.api.dtos.LancamentoDto;
+import com.novaeslucas.pontoeletronico.api.dtos.LancamentosDataDto;
 import com.novaeslucas.pontoeletronico.api.entities.Funcionario;
 import com.novaeslucas.pontoeletronico.api.entities.Lancamento;
 import com.novaeslucas.pontoeletronico.api.entities.LancamentoFolhaPonto;
+import com.novaeslucas.pontoeletronico.api.entities.LancamentosData;
 import com.novaeslucas.pontoeletronico.api.enums.TipoEnum;
 import com.novaeslucas.pontoeletronico.api.exporter.ExcelFileExporter;
 import com.novaeslucas.pontoeletronico.api.response.Response;
@@ -35,18 +41,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 @RestController
@@ -62,6 +60,9 @@ public class LancamentoController {
 
     @Value("${paginacao.qtd_por_pagina}")
     private int qtdPorPagina;
+
+    private static final String EMPTY = "";
+    private static final String ESPACO = " ";
 
     public LancamentoController(LancamentoService lancamentoService, FuncionarioService funcionarioService) {
         this.lancamentoService = lancamentoService;
@@ -345,6 +346,32 @@ public class LancamentoController {
         return data;
     }
 
+    private Date alterarDiaHoraData(Date data, boolean primeiroDia){
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(data);
+        if(primeiroDia){
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+        }else{
+            cal.set(Calendar.HOUR_OF_DAY, 23);
+            cal.set(Calendar.MINUTE, 59);
+        }
+        data = cal.getTime();
+        return data;
+    }
+
+    private Date alterarDiaHoraSegundosData(Date data, boolean primeiroDia){
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(data);
+        if(primeiroDia){
+            cal.set(Calendar.SECOND, 0);
+        }else{
+            cal.set(Calendar.SECOND, 59);
+        }
+        data = cal.getTime();
+        return data;
+    }
+
     private String formatarDataPagina(Date dataLancamento){
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
         return formatter.format(dataLancamento);
@@ -354,7 +381,7 @@ public class LancamentoController {
     public ResponseEntity<Object> downloadRelatorioMensal(@PathVariable("id") Long id, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date data, HttpServletResponse response) throws IOException {
         Date dataInicialMes = this.alterarDiaHoraData(retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(data), true);
         Date dataFinalMes = this.alterarDiaHoraData(retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(data), false);
-        List<Lancamento> lancamentosMes = this.lancamentoService.buscarPorDataFuncionarioId(dataInicialMes, dataFinalMes, id);
+        List<Lancamento> lancamentosMes = this.lancamentoService.buscarPorDatasFuncionarioId(dataInicialMes, dataFinalMes, id);
         if(lancamentosMes.size() > 0){
             response.setContentType("application/octet-stream");
             response.setHeader("Content-Disposition", "attachment; filename=lancamentos.xlsx");
@@ -374,7 +401,7 @@ public class LancamentoController {
         Date hoje = new Date();
         Date dataInicialMes = this.alterarDiaHoraData(retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(hoje), true);
         Date dataFinalMes = this.alterarDiaHoraData(retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(hoje), false);
-        List<Lancamento> lancamentosMes = this.lancamentoService.buscarPorDataFuncionarioId(dataInicialMes, dataFinalMes, id);
+        List<Lancamento> lancamentosMes = this.lancamentoService.buscarPorDatasFuncionarioId(dataInicialMes, dataFinalMes, id);
 
         Calendar cal = Calendar.getInstance();
         cal.setTime(dataFinalMes);
@@ -430,7 +457,94 @@ public class LancamentoController {
         }else{
             mv = new ModelAndView("error");
         }
-
         return mv;
     }
+
+    @GetMapping(value = "/lancamentos-data/{funcionarioId}/{data}")
+    public ModelAndView lancamentosDataForm(@PathVariable("funcionarioId") Long funcionarioId, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date data) {
+        Date dataInicial = this.alterarDiaHoraData(data, true);
+        Date dataFinal = this.alterarDiaHoraData(data, false);
+        List<Lancamento> lancamentos = this.lancamentoService.buscarPorDatasFuncionarioId(dataInicial, dataFinal, funcionarioId);
+        LancamentosData lancamentosData = new LancamentosData();
+        lancamentosData.setIdFuncionario(funcionarioId);
+        lancamentosData.setDataAtualizacao(new Date());
+        lancamentosData.setData(data);
+        for (Lancamento l: lancamentos) {
+            Date input = l.getData();
+            Instant instant = input.toInstant();
+            ZonedDateTime zdt = instant.atZone(ZoneId.systemDefault());
+            LocalTime hora = zdt.toLocalTime();
+            switch (l.getTipo()){
+                case INICIO_TRABALHO:
+                    lancamentosData.setInicioTrabalho(hora);
+                    break;
+                case INICIO_ALMOCO:
+                    lancamentosData.setInicioAlmoco(hora);
+                    break;
+                case TERMINO_ALMOCO:
+                    lancamentosData.setTerminoAlmoco(hora);
+                    break;
+                case TERMINO_TRABALHO:
+                    lancamentosData.setTerminoTrabalho(hora);
+                    break;
+                case INICIO_TURNO_EXTRA:
+                    lancamentosData.setInicioTurnoExtra(hora);
+                    break;
+                case TERMINO_TURNO_EXTRA:
+                    lancamentosData.setTerminoTurnoExtra(hora);
+                    break;
+            }
+        }
+        ModelAndView mv = new ModelAndView("lancamentos_data");
+        mv.addObject("lancamentosData", lancamentosData);
+        return mv;
+    }
+
+    @PostMapping(value = "/lancamentos-data/{funcionarioId}/{data}")
+    public ModelAndView lancamentosDataEdit(@PathVariable("funcionarioId") Long funcionarioId, @PathVariable("data") String data, @Valid @ModelAttribute("lancamentosDataDto") LancamentosDataDto lancamentosDataDto, BindingResult result){
+        if(lancamentosDataDto.getInicioTrabalho() != null && !lancamentosDataDto.getInicioTrabalho().isEmpty()){
+            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioTrabalho(), TipoEnum.INICIO_TRABALHO.toString(), result);
+        }
+        if(lancamentosDataDto.getInicioAlmoco() != null && !lancamentosDataDto.getInicioAlmoco().isEmpty()){
+            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioAlmoco(), TipoEnum.INICIO_ALMOCO.toString(), result);
+        }
+        if(lancamentosDataDto.getTerminoAlmoco() != null && !lancamentosDataDto.getTerminoAlmoco().isEmpty()){
+            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoAlmoco(), TipoEnum.TERMINO_ALMOCO.toString(), result);
+        }
+        if(lancamentosDataDto.getTerminoTrabalho() != null && !lancamentosDataDto.getTerminoTrabalho().isEmpty()){
+            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoTrabalho(), TipoEnum.TERMINO_TRABALHO.toString(), result);
+        }
+        if(lancamentosDataDto.getInicioTurnoExtra() != null && !lancamentosDataDto.getInicioTurnoExtra().isEmpty()){
+            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioTurnoExtra(), TipoEnum.INICIO_TURNO_EXTRA.toString(), result);
+        }
+        if(lancamentosDataDto.getTerminoTurnoExtra() != null && !lancamentosDataDto.getTerminoTurnoExtra().isEmpty()){
+            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoTurnoExtra(), TipoEnum.TERMINO_TURNO_EXTRA.toString(), result);
+        }
+        ModelAndView mv = new ModelAndView("lancamento_editado");
+        return mv;
+    }
+
+    private void persistirLancamentosData(Long funcionarioId, String dataCompleta, String tipoLancamento, BindingResult result) {
+        try {
+            Date dataConvertida = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(dataCompleta);
+            List<Lancamento> lancamentos = this.lancamentoService.buscarPorDatasFuncionarioId(alterarDiaHoraSegundosData(dataConvertida, true), alterarDiaHoraSegundosData(dataConvertida, false), funcionarioId);
+            if(!lancamentos.isEmpty()){
+                Lancamento l = lancamentos.get(0);
+                LancamentoDto editLancamento = new LancamentoDto();
+                editLancamento.setData(dataCompleta);
+                editLancamento.setFuncionarioId(l.getFuncionario().getId());
+                editLancamento.setTipo(l.getTipo().toString());
+                this.persistir(l.getId(), editLancamento, result, true);
+            }else {
+                LancamentoDto novoLancamento = new LancamentoDto();
+                novoLancamento.setData(dataCompleta);
+                novoLancamento.setFuncionarioId(funcionarioId);
+                novoLancamento.setTipo(tipoLancamento);
+                this.persistir(null, novoLancamento, result, false);
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
