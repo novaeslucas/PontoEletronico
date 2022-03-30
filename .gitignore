@@ -53,3 +53,6 @@ nbdist/
 ### SonarQube files ###
 /.scannerwork
 sonar-project.properties
+
+.vscode
+.devcontainer
