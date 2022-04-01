@@ -4,7 +4,6 @@ import com.novaeslucas.pontoeletronico.api.entities.Lancamento;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
-import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;

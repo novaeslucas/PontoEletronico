@@ -10,6 +10,9 @@
             <div class="container text-center h2">
                 <strong>Folha de ponto</strong>
             </div>
+            <div class="text-center">
+                <a style="text-decoration: none; color: #212529;" th:href="@{/api/lancamentos/download/{funcionarioId}/{data} (funcionarioId=${paramFuncionarioId},data=${paramDataDownload})}">Download</a>
+            </div>
         </div>
         <br/>
         <div class="table-responsive">
@@ -25,7 +28,7 @@
                 <tbody>
                 <tr th:each="elemento,iter : ${map}">
                     <td>
-                        <a style="text-decoration: none; color: #212529;" th:href="@{/api/lancamentos/lancamentos-data/{funcionarioId}/{data} (funcionarioId=${paramFuncionarioId},data=${paramData[iter.index]})}"><span th:text="${elemento.key}"/></a>
+                        <a style="text-decoration: none; color: #212529;" th:href="@{/api/lancamentos/lancamentos-data/{funcionarioId}/{data} (funcionarioId=${paramFuncionarioId},data=${paramDataList[iter.index]})}"><span th:text="${elemento.key}"/></a>
                     </td>
                     <td>
                         <span th:text="${elemento.value.turno1Horario1 != null ? elemento.value.turno1Horario1 : '-'}"/>

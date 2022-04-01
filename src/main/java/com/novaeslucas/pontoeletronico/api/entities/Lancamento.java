@@ -1,7 +1,6 @@
 package com.novaeslucas.pontoeletronico.api.entities;
 
 import com.novaeslucas.pontoeletronico.api.enums.TipoEnum;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
