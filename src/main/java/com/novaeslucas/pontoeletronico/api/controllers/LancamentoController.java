@@ -57,6 +57,9 @@ public class LancamentoController {
     @Value("${paginacao.qtd_por_pagina}")
     private int qtdPorPagina;
     private static final String ESPACO = " ";
+    private static final String VAZIO = "";
+    private static final String HORA_ZERO = "00:00:00";
+    private static final String SEGUNDOS_ZERADO = ":00";
 
     public LancamentoController(LancamentoService lancamentoService, FuncionarioService funcionarioService) {
         this.lancamentoService = lancamentoService;
@@ -379,22 +382,29 @@ public class LancamentoController {
         return new SimpleDateFormat(padrao);
     }
 
-    @GetMapping("/folha-ponto/{id}")
-    public ModelAndView folhaPonto(@PathVariable("id") Long id){
-        Date hoje = new Date();
-        Date dataInicialMes = this.alterarDiaHoraData(retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(hoje), true);
-        Date dataFinalMes = this.alterarDiaHoraData(retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(hoje), false);
+    @GetMapping({"/folha-ponto/{id}", "/folha-ponto/{id}/{data}"})
+    public ModelAndView folhaPonto(@PathVariable("id") Long id, @PathVariable(name = "data", required = false) Optional<String> dataReferencia){
+        Date d = new Date();
+        if(dataReferencia.isPresent()){
+            try {
+                d = retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dataReferencia.get() + " 00:00:00");
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        Date dataInicialMes = this.alterarDiaHoraData(retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(d), true);
+        Date dataFinalMes = this.alterarDiaHoraData(retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(d), false);
         List<Lancamento> lancamentosMes = this.lancamentoService.buscarPorDatasFuncionarioId(dataInicialMes, dataFinalMes, id);
 
         Calendar cal = Calendar.getInstance();
         cal.setTime(dataFinalMes);
         int ultimoDiaMes = cal.getActualMaximum(Calendar.DATE);
-        List<String> paramData = new ArrayList<>();
+        List<String> paramDataList = new ArrayList<>();
 
         ModelAndView mv;
         if(lancamentosMes.size() > 0){
             Map<String, List<Lancamento>> map = lancamentosMes.stream().collect(Collectors.groupingBy(l -> retornarArgumentoSimpleDateFormat("dd/MM/yyyy").format(l.getData())));
-            String mesAno = retornarArgumentoSimpleDateFormat("/MM/yyyy").format(new Date());
+            String mesAno = retornarArgumentoSimpleDateFormat("/MM/yyyy").format(d);
             for(int i = 0; i < ultimoDiaMes; i++){
                 String diaDoMes = i >= 0 && i < 9 ? "0" + (i + 1) + mesAno : (i + 1) + mesAno;
                 if(!map.containsKey(diaDoMes)){
@@ -443,13 +453,14 @@ public class LancamentoController {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                paramData.add(retornarArgumentoSimpleDateFormat("yyyy-MM-dd").format(paramDate));
+                paramDataList.add(retornarArgumentoSimpleDateFormat("yyyy-MM-dd").format(paramDate));
             }
 
             mv = new ModelAndView("folha_ponto");
             mv.addObject("map", mapAlterado);
             mv.addObject("paramFuncionarioId", id);
-            mv.addObject("paramData", paramData);
+            mv.addObject("paramDataList", paramDataList);
+            mv.addObject("paramDataDownload", retornarArgumentoSimpleDateFormat("yyyy-MM-dd").format(dataInicialMes));
         }else{
             mv = new ModelAndView("error");
         }
@@ -499,22 +510,28 @@ public class LancamentoController {
     @PostMapping(value = "/lancamentos-data/{funcionarioId}/{data}")
     public ModelAndView lancamentosDataEdit(@PathVariable("funcionarioId") Long funcionarioId, @Valid @ModelAttribute("lancamentosDataDto") LancamentosDataDto lancamentosDataDto, BindingResult result){
         if(lancamentosDataDto.getInicioTrabalho() != null && !lancamentosDataDto.getInicioTrabalho().equals(lancamentosDataDto.getInicioTrabalhoAntigo())){
-            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioTrabalhoAntigo(), lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioTrabalho(), TipoEnum.INICIO_TRABALHO.toString(), result);
+            String lancamentoAntigo = lancamentosDataDto.getInicioTrabalhoAntigo().equals(VAZIO) ? lancamentosDataDto.getData() + ESPACO + HORA_ZERO : lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioTrabalhoAntigo();
+            persistirLancamentosData(funcionarioId, lancamentoAntigo, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioTrabalho(), TipoEnum.INICIO_TRABALHO.toString(), result);
         }
         if(lancamentosDataDto.getInicioAlmoco() != null && !lancamentosDataDto.getInicioAlmoco().equals(lancamentosDataDto.getInicioAlmocoAntigo())){
-            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioAlmocoAntigo(), lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioAlmoco(), TipoEnum.INICIO_ALMOCO.toString(), result);
+            String lancamentoAntigo = lancamentosDataDto.getInicioAlmocoAntigo().equals(VAZIO) ? lancamentosDataDto.getData() + ESPACO + HORA_ZERO : lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioAlmocoAntigo();
+            persistirLancamentosData(funcionarioId, lancamentoAntigo, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioAlmoco(), TipoEnum.INICIO_ALMOCO.toString(), result);
         }
         if(lancamentosDataDto.getTerminoAlmoco() != null && !lancamentosDataDto.getTerminoAlmoco().equals(lancamentosDataDto.getTerminoAlmocoAntigo())){
-            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoAlmocoAntigo(), lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoAlmoco(), TipoEnum.TERMINO_ALMOCO.toString(), result);
+            String lancamentoAntigo = lancamentosDataDto.getTerminoAlmocoAntigo().equals(VAZIO) ? lancamentosDataDto.getData() + ESPACO + HORA_ZERO : lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoAlmocoAntigo();
+            persistirLancamentosData(funcionarioId, lancamentoAntigo, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoAlmoco(), TipoEnum.TERMINO_ALMOCO.toString(), result);
         }
         if(lancamentosDataDto.getTerminoTrabalho() != null && !lancamentosDataDto.getTerminoTrabalho().equals(lancamentosDataDto.getTerminoTrabalhoAntigo())){
-            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoTrabalhoAntigo(), lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoTrabalho(), TipoEnum.TERMINO_TRABALHO.toString(), result);
+            String lancamentoAntigo = lancamentosDataDto.getTerminoTrabalhoAntigo().equals(VAZIO) ? lancamentosDataDto.getData() + ESPACO + HORA_ZERO : lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoTrabalhoAntigo();
+            persistirLancamentosData(funcionarioId, lancamentoAntigo, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoTrabalho(), TipoEnum.TERMINO_TRABALHO.toString(), result);
         }
         if(lancamentosDataDto.getInicioTurnoExtra() != null && !lancamentosDataDto.getInicioTurnoExtra().equals(lancamentosDataDto.getInicioTurnoExtraAntigo())){
-            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioTurnoExtraAntigo(), lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioTurnoExtra(), TipoEnum.INICIO_TURNO_EXTRA.toString(), result);
+            String lancamentoAntigo = lancamentosDataDto.getInicioTurnoExtraAntigo().equals(VAZIO) ? lancamentosDataDto.getData() + ESPACO + HORA_ZERO : lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioTurnoExtraAntigo();
+            persistirLancamentosData(funcionarioId, lancamentoAntigo, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getInicioTurnoExtra(), TipoEnum.INICIO_TURNO_EXTRA.toString(), result);
         }
         if(lancamentosDataDto.getTerminoTurnoExtra() != null && !lancamentosDataDto.getTerminoTurnoExtra().equals(lancamentosDataDto.getTerminoTurnoExtraAntigo())){
-            persistirLancamentosData(funcionarioId, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoTurnoExtraAntigo(), lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoTurnoExtra(), TipoEnum.TERMINO_TURNO_EXTRA.toString(), result);
+            String lancamentoAntigo = lancamentosDataDto.getTerminoTurnoExtraAntigo().equals(VAZIO) ? lancamentosDataDto.getData() + ESPACO + HORA_ZERO : lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoTurnoExtraAntigo();
+            persistirLancamentosData(funcionarioId, lancamentoAntigo, lancamentosDataDto.getData() + ESPACO + lancamentosDataDto.getTerminoTurnoExtra(), TipoEnum.TERMINO_TURNO_EXTRA.toString(), result);
         }
 
         //verificar se erros no result e retornar para pagina de erro se erro
