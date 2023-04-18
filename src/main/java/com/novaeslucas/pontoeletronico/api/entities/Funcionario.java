@@ -26,7 +26,6 @@ public class Funcionario implements Serializable {
     private PerfilEnum perfil;
     private Date dataCriacao;
     private Date dataAtualizacao;
-    private Empresa empresa;
     private List<Lancamento> lancamentos;
 
     @Id
@@ -145,15 +144,6 @@ public class Funcionario implements Serializable {
         this.senha = senha;
     }
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    public Empresa getEmpresa() {
-        return empresa;
-    }
-
-    public void setEmpresa(Empresa empresa) {
-        this.empresa = empresa;
-    }
-
     @OneToMany(mappedBy = "funcionario", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     public List<Lancamento> getLancamentos() {
         return lancamentos;
@@ -180,7 +170,7 @@ public class Funcionario implements Serializable {
         return "Funcionario [id=" + id + ", nome=" + nome + ", email=" + email + ", senha=" + senha + ", cpf=" + cpf
                 + ", valorHora=" + valorHora + ", qtdHorasTrabalhoDia=" + qtdHorasTrabalhoDia + ", qtdHorasAlmoco="
                 + qtdHorasAlmoco + ", perfil=" + perfil + ", dataCriacao="
-                + dataCriacao + ", dataAtualizacao=" + dataAtualizacao + ", empresa=" + empresa + "]";
+                + dataCriacao + ", dataAtualizacao=" + dataAtualizacao + "]";
     }
 
 }

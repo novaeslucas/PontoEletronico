@@ -29,7 +29,6 @@ import com.novaeslucas.pontoeletronico.api.response.Response;
 import com.novaeslucas.pontoeletronico.api.services.FuncionarioService;
 import com.novaeslucas.pontoeletronico.api.services.LancamentoService;
 import com.novaeslucas.pontoeletronico.api.utils.DateUtils;
-import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.EnumUtils;
 import org.apache.poi.util.IOUtils;
 import org.slf4j.Logger;
@@ -202,7 +201,6 @@ public class LancamentoController {
         return lancamento;
     }
 
-    @ApiOperation(value = "Lança um ponto no sistema de ponto eletrônico", httpMethod = "GET")
     @GetMapping(value = "/qrcode/{id}")
     public ModelAndView preLancarPonto(@PathVariable("id") Long id) {
         ModelAndView mv = new ModelAndView("lancar_ponto");
