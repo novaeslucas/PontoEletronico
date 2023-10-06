@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.w3.org/1999/xhtml" layout:decorate="~{fragments/main_layout}">
+<head>
+    <title>Ponto Eletrônico</title>
+</head>
+<body>
+<div>
+    <div layout:fragment="content">
+        <div class="container">
+            <p>Certificado</p>
+            <form action="https://autenticador.certisign.com.br/CertisignLogin/certificado/v2/login" method="post" id="form-auth" enctype="multipart/form-data">
+                <input type="hidden" value="17908" name="id">
+                <input type="hidden" value="CHAVE CRIPTOGRAFICA INICIAL" name="nome">
+                <input type="hidden" value="http://localhost:8080/api/lancamentos/obter_dados" name="retorno">
+                <span>Login</span>
+                <br/>
+                <br/>
+                <button type="submit" class="btn btn-success">Confirmar</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
