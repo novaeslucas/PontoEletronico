@@ -4,6 +4,11 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.AlgorithmParameters;
+import java.security.SecureRandom;
+import java.security.spec.KeySpec;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -13,6 +18,12 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
@@ -29,8 +40,8 @@ import com.novaeslucas.pontoeletronico.api.response.Response;
 import com.novaeslucas.pontoeletronico.api.services.FuncionarioService;
 import com.novaeslucas.pontoeletronico.api.services.LancamentoService;
 import com.novaeslucas.pontoeletronico.api.utils.DateUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.EnumUtils;
-import org.apache.poi.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -360,6 +371,59 @@ public class LancamentoController {
         return formatter.format(dataLancamento);
     }
 
+    @GetMapping(value = "/certificado")
+    public ModelAndView certificado(){
+        return new ModelAndView("certificado");
+    }
+
+    private static void teste(){
+        String encodedString = "JnsgLQ8exdPX0rJbaC\\+6d1sXpt4WGRMjLQtyI7R6kAHB5uP8iyKIOwKT2dQKiluZA49xGjLitt5Tr0OwOK5PqJOEi34O8YqCn/gdpJv2bpIEN04HgfiATOyMb2AI5bHUFcLx29R6aDV9C1rBAQLKRJHHN6e8aJ7b7VZ9P6IG3XSu9FAx4zt2lkGJbg4FxS\\+NS";
+
+        // Remover o escape do caractere "\"
+        String decodedString = encodedString.replace("\\", "");
+
+        try {
+            byte[] decodedBytes = Base64.getDecoder().decode(decodedString);
+            String decodedValue = new String(decodedBytes);
+
+            System.out.println("Decoded string: " + decodedValue);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @PostMapping(value = "/obter_dados")
+    public ModelAndView obterDados(@ModelAttribute("cb") String cb){
+        cb = cb.replace("certplus", "+");
+        System.out.println(decrypt(cb));
+        return new ModelAndView("certificado");
+    }
+
+    private static String decrypt(String cb){
+        String retorno = "";
+
+        try {
+            Cipher decipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            decipher.init(Cipher.DECRYPT_MODE, getSecretKeySpec(), new IvParameterSpec(new byte[16]));
+
+            byte[] decoded = Base64.getDecoder().decode(cb.getBytes(StandardCharsets.UTF_8));
+            byte[] decryptedBytes = decipher.doFinal(decoded);
+            String decrypt = new String(decryptedBytes);
+
+            retorno = decrypt;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return retorno;
+    }
+
+    private static SecretKeySpec getSecretKeySpec() throws IOException {
+        byte[] keyBytes = Files.readAllBytes(Paths.get("C:/17908.pk"));
+        byte[] truncatedKey = new byte[16];
+        System.arraycopy(keyBytes, 0, truncatedKey, 0, truncatedKey.length);
+        return new SecretKeySpec(truncatedKey, "AES");
+    }
+
     @GetMapping("/download/{id}/{data}")
     public ResponseEntity<Object> downloadRelatorioMensal(@PathVariable("id") Long id, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date data, HttpServletResponse response) throws IOException {
         Date dataInicialMes = this.alterarDiaHoraData(retornarArgumentoSimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(data), true);
@@ -370,7 +434,7 @@ public class LancamentoController {
             response.setHeader("Content-Disposition", "attachment; filename=lancamentos.xlsx");
             ByteArrayInputStream stream = ExcelFileExporter.listaLancamentosToExcelFile(lancamentosMes);
             assert stream != null;
-            IOUtils.copy(stream, response.getOutputStream());
+            //IOUtils.copy(stream, response.getOutputStream());
             return new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
